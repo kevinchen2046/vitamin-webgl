@@ -1,18 +1,24 @@
 {
-  "compilerOptions": {
-    "target": "es5",
-		"noImplicitAny": false,
-		"sourceMap": false,
-		"declaration": true,
-		"outFile": "./bin/main.js",
-		"lib": [
-			"es6",
-			"dom",
-			"es2015.promise"
-		]
-  },
-  "include": [
-    "libs",
-    "src"
-  ]
+    "compilerOptions": {
+        "target": "es5",
+        "module":"CommonJS",
+        "allowJs": false,
+        "outDir": "bin",
+        "experimentalDecorators": true,
+        "lib": [
+            "es5",
+            "dom",
+            "es2015.promise"
+        ],
+        "types": [],
+        "sourceMap": true
+    },
+    "include": [
+        "lib",
+        "src"
+    ],
+    "exclude": [
+        "templates",
+        "node_modules"
+    ]
 }

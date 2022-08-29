@@ -1,20 +1,19 @@
 {
-  "name": "vitamin-webgl",
+  "name": "lesson",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "gulp"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "httpserver":"http-server . -c-1 -g --cors",
+    "build": "gulp build",
+    "watch": "gulp watch"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
     "gulp": "^4.0.2",
-    "gulp-typescript": "^6.0.0-alpha.1",
-    "typescript": "^3.9.7"
-  },
-  "devDependencies": {
-    "gulp-concat": "^2.6.1"
+    "gulp-typescript": "^6.0.0-alpha.1"
   }
 }
