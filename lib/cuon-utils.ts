@@ -28,7 +28,7 @@ namespace Utils {
    * @param fshader 片段着色器程序 (string)
    * @return 已创建program对象，如果创建失败，则为空
    */
-  function createProgram(gl, vshader, fshader) {
+  export function createProgram(gl, vshader, fshader) {
     // Create shader object
     var vertexShader = loadShader(gl, gl.VERTEX_SHADER, vshader);
     var fragmentShader = loadShader(gl, gl.FRAGMENT_SHADER, fshader);

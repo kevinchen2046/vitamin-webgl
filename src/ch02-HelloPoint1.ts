@@ -17,7 +17,7 @@ var FSHADER_SOURCE =
 class HelloPoint1 {
     constructor() {
         // 获取画布<canvas>元素
-        var canvas = document.getElementById('webgl');
+        var canvas = document.getElementById('webgl') as HTMLCanvasElement;
 
         // 获取WebGL的渲染上下文
         var gl:WebGLRenderingContext = Utils.getWebGLContext(canvas);

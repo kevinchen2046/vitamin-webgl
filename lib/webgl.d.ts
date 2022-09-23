@@ -1,3 +1,9 @@
+declare interface WebGLProgram {
+    [key: string]: number | WebGLUniformLocation
+}
+declare interface WebGLRenderingContext {
+    program: WebGLProgram
+}
 declare interface WebGLRenderingContextBase {
     /**
      * 执行顶点着色器,按照`mode`参数指定的方式绘制图形
@@ -36,4 +42,41 @@ declare interface WebGLRenderingContextBase {
      *          - `INVALID_VALUE` location大于等于attribute变量的最大数目(默认为8)
      */
     vertexAttrib3f(index: number, x: number, y: number, z: number): void
+
+    /**
+     * 创建缓冲区
+     */
+    createBuffer(): WebGLBuffer
+    /**
+     * 待删除的缓冲区对象
+     */
+    deleteBuffer(buffer: WebGLBuffer): void
+    /**
+     * 绑定缓冲区
+     * @param target - 参数可以是以下中的一个
+     *  - `gl.ARRAY_BUFFER` 表示缓冲区对象包含了顶点数据
+     *  - `gl.ELEMENT` 表示缓冲区对象包含了顶点的索引值
+     * ----
+     * @param buffer - 指定之前由`gl.createBuffer()`返回的待绑定的缓冲区对象
+     *   - 如果指定为null,则禁用对target的绑定
+     * ----
+     * @return 无
+     * @error `INVALID_ENUM` target不是上述值之一,这将保持原有的绑定情况不变
+     */
+    bindBuffer(target: number, buffer: WebGLBuffer);
+
+    /**
+     * 开辟存储空间,向绑定在target上的缓冲区对象中写入数据data
+     * @param target gl.ARRAY_BUFFER | gl.ELEMENT_ARRAY_BUFFER
+     * @param data 写入缓冲区对象的数据(类型化数组)
+     * @param usage 表示程序将如何使用存储在缓冲区对象中的数据。该参数将帮助WebGL优化操作,但是就算你传入了错误的值,也不会终止程序(仅仅是降低程序的效率)
+     *  - `gl.STATIC_DRAW` 只会向缓冲区对象中写入一次数据,但需要绘制很多次
+     *  - `gl.STREAM_DRAW` 只会向缓冲区对象中写入一次数据,然后绘制若干次
+     *  - `gl.DYNAMIC_DRAW` 会向缓冲区对象中多次写入数据,并绘制很多次
+     */
+    bufferData(target: number, data: BufferSource, usage: number);
+
+    vertexAttribPointer(index: number, size: number, type: number, normalized: boolean, stride: number, offset: number);
+
+    enableVertexAttribArray(index: number);
 }

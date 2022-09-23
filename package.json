@@ -5,15 +5,16 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "httpserver":"http-server . -c-1 -g --cors",
+    "httpserver": "http-server . -c-1 -g --cors",
     "build": "gulp build",
-    "watch": "gulp watch"
+    "watch": "gulp watch "
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
     "gulp": "^4.0.2",
-    "gulp-typescript": "^6.0.0-alpha.1"
+    "gulp-typescript": "^6.0.0-alpha.1",
+    "ws": "^8.8.1"
   }
 }
