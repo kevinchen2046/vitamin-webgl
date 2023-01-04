@@ -1,0 +1,25 @@
+{
+    "compilerOptions": {
+        "target": "es5",
+        "module":"CommonJS",
+        "allowJs": false,
+        "outDir": "dist",
+        "experimentalDecorators": true,
+        "skipLibCheck": true,
+        "lib": [
+            "es2015",
+            "dom",
+            "es2015.promise"
+        ],
+        "types": [],
+        "sourceMap": true
+    },
+    "include": [
+        "lib",
+        "src"
+    ],
+    "exclude": [
+        "templates",
+        "node_modules"
+    ]
+}

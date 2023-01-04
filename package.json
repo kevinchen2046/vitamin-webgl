@@ -4,17 +4,30 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "httpserver": "http-server . -c-1 -g --cors",
-    "build": "gulp build",
-    "watch": "gulp watch "
+    "build": "webpack --mode development",
+    "watch": "webpack-dev-server --mode development --inline --progress",
+    "publish": "webpack --ENV=PROD --mode production",
+    "example": "http-server ./examples/bin -c-1 -g --cors"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
+  "devDependencies": {
+    "clean-webpack-plugin": "^4.0.0",
+    "ts-loader": "^6.0.2",
+    "tslint": "^5.17.0",
+    "typescript": "^3.5.1",
+    "webpack": "^4.34.0",
+    "webpack-cli": "^3.3.4",
+    "webpack-dev-server": "^3.7.1"
+  },
   "dependencies": {
+    "glsl-noise": "0.0.0",
+    "glslify": "^7.1.1",
     "gulp": "^4.0.2",
     "gulp-typescript": "^6.0.0-alpha.1",
-    "ws": "^8.8.1"
+    "ws": "^8.8.1",
+    "es6-promise": "^4.2.8"
   }
 }

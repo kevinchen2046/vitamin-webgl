@@ -1,14 +1,15 @@
 {
     "compilerOptions": {
-        "target": "es5",
+        "target": "ES6",
         "module":"CommonJS",
         "allowJs": false,
-        "outDir": "bin",
+        "outDir": "dist",
         "experimentalDecorators": true,
+        "skipLibCheck": true,
         "lib": [
-            "es5",
+            "ES6",
             "dom",
-            "es2015.promise"
+            "ESNext.Promise"
         ],
         "types": [],
         "sourceMap": true
