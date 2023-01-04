@@ -79,7 +79,7 @@ export class HelloWebGL {
         //将存储属性a_Color链接到Buffer数据
         shader.getAttribute("a_Color").linkBuffer(buffer, 3, 2);
         //加载图片
-        var image = await this.loadImage('../resources/yellowflower.jpg');
+        var image = await this.loadImage('./res/yellowflower.jpg');
         //创建纹理
         shader.createTexture("u_Sampler", image, 0);
         //循环渲染

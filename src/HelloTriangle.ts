@@ -125,7 +125,7 @@ export class HelloTriangle {
             console.log('Failed to get the storage location of u_Sampler');
             return false;
         }
-        var image = await this.loadImage('../resources/yellowflower.jpg');
+        var image = await this.loadImage('./res/yellowflower.jpg');
 
         // Enable texture unit0
         gl.activeTexture(gl.TEXTURE0);
