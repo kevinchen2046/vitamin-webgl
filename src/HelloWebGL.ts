@@ -1,6 +1,7 @@
 import { Geometry } from "./Geometry";
-import { attribute, cos, DefinedType, float, GLSL_Fragment, GLSL_Vertex, method, precision, PrecisionType, sampler2D, sin, smoothstep, texture2D, uniform, varying, vec2, _vec2, _vec4 } from "./core/GLSL";
+import { attribute, cos, DefinedType, float, GLSL_Fragment, GLSL_Vertex, method, precision, PrecisionType, sampler2D, sin, smoothstep, texture2D, uniform, varying, vec2, __vec2, __vec4 } from "./core/GLSL";
 import { RenderContext } from "./core/RenderContext";
+import { Loader } from "./Util";
 
 @precision(PrecisionType.mediump)
 class MyVS extends GLSL_Vertex {
@@ -32,9 +33,9 @@ class MyVS extends GLSL_Vertex {
         let dis = sin(0.5 - x1) + cos(y1);
         x += sin(dis + time) / 5.0;
         y += cos(dis + time) / 5.0;
-        this.gl_Position = _vec4(x, y, 0.0, 1.0);
+        this.gl_Position = __vec4(x, y, 0.0, 1.0);
         this.v_Color = this.a_Color;
-        this.v_TexCoord = _vec2(this.a_Position.x - 0.5, 0.5 - this.a_Position.y);
+        this.v_TexCoord = __vec2(this.a_Position.x - 0.5, 0.5 - this.a_Position.y);
     }
 }
 
@@ -75,31 +76,21 @@ export class HelloWebGL {
         //创建Buffer
         let buffer = shader.createBuffer(geometry.buffer, 5, context.gl.DYNAMIC_DRAW);
         //将存储属性a_Position链接到Buffer数据
-        shader.getAttribute("a_Position").linkBuffer(buffer, 2, 0);
+        shader.getAttribute("a_Position").linkBuffer(buffer, 2, buffer.elementCount, 0);
         //将存储属性a_Color链接到Buffer数据
-        shader.getAttribute("a_Color").linkBuffer(buffer, 3, 2);
+        shader.getAttribute("a_Color").linkBuffer(buffer, 3, buffer.elementCount, 2);
         //加载图片
-        var image = await this.loadImage('./res/yellowflower.jpg');
+        var image = await Loader.loadImage('./res/yellowflower.jpg');
         //创建纹理
-        shader.createTexture("u_Sampler", image, 0);
+        let texture = shader.createTexture("u_Sampler", image, 0);
+        // texture.active();
+       
+        texture.set("LINEAR")
         //循环渲染
         context.tick(frame => {
             //更新u_time值
             shader.set("u_time", frame);
             context.updateRender();
-        })
-    }
-
-    loadImage(url) {
-        return new Promise<HTMLImageElement>(reslove => {
-            var image = new Image();
-            if (!image) {
-                console.log('Failed to create the image object');
-                reslove(null);
-                return;
-            }
-            image.onload = () => reslove(image);
-            image.src = url;
         })
     }
 }

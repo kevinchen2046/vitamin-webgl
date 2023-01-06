@@ -1,4 +1,5 @@
 import { DefinedType, getGlsl, getGlslInfo, GLSL_Fragment, GLSL_Vertex } from "./GLSL";
+import { RenderContext } from "./RenderContext";
 
 export class Shader {
     public gl: WebGLRenderingContext;
@@ -30,13 +31,20 @@ export class Shader {
         // psInfo.varyings.forEach(value => this.createVarying(value.name, value.type));
     }
 
-    updateRender() {
+    draw() {
         this.properties.forEach((value) => {
             value.upload();
         });
-        for (let i = 0; i < this.buffers.length; i++) {
-            this.buffers[i].draw(this.gl);
+        let offset=this.buffers[0].offset;
+        let count=this.buffers[0].count;
+        if(this.buffers.length>1){
+            for (let i = 1; i < this.buffers.length; i++) {
+                if(offset!=this.buffers[i].offset||count!=this.buffers[i].count){
+                    console.warn("diff offset or count!");
+                }
+            }
         }
+        this.gl.drawArrays(this.gl.TRIANGLES, offset,count);
     }
 
     get(name: string) {
@@ -52,7 +60,8 @@ export class Shader {
 
     createUniform(name: string, type: DefinedType) {
         if (this.properties.has(name)) return this.properties.get(name);
-        let location = this.gl.getUniformLocation(this.gl.program, name as string);
+        let ext = (type == DefinedType.float_array) ? `[0]` : "";
+        let location = this.gl.getUniformLocation(this.gl.program, name as string + ext);
         if (location < 0) {
             console.error(`Failed to get the storage location of ${name as string}`);
             return;
@@ -79,14 +88,24 @@ export class Shader {
     /**
      * 创建Buffer
      * @param data 写入缓冲区对象的数据(类型化数组)
-     * @param elementLength 元素长度 每个元素存在于数据中的长度 
+     * @param elementCount 元素长度 每个元素存在于数据中的长度 
      * @param usage 表示程序将如何使用存储在缓冲区对象中的数据。该参数将帮助WebGL优化操作,但是就算你传入了错误的值,也不会终止程序(仅仅是降低程序的效率)
      *  - `gl.STATIC_DRAW` 只会向缓冲区对象中写入一次数据,但需要绘制很多次
      *  - `gl.STREAM_DRAW` 只会向缓冲区对象中写入一次数据,然后绘制若干次
      *  - `gl.DYNAMIC_DRAW` 会向缓冲区对象中多次写入数据,并绘制很多次
+     * @param start 开始读取的位置
+     * @param end 结束读取的位置 默认为data.length
      * @returns 
      */
-    createBuffer(data: Float32Array, elementLength: number, usage: WebGLRenderingContextBase["STATIC_DRAW"] | WebGLRenderingContextBase["STREAM_DRAW"] | WebGLRenderingContextBase["DYNAMIC_DRAW"]) {
+    createBuffer(
+        data: number[] | Float32Array,
+        elementCount: number,
+        usage: WebGLRenderingContextBase["STATIC_DRAW"] | WebGLRenderingContextBase["STREAM_DRAW"] | WebGLRenderingContextBase["DYNAMIC_DRAW"],
+        start: number = 0,
+        end: number = 0) {
+        if (!(data instanceof Float32Array)) {
+            data = new Float32Array(data);
+        }
         // Create a buffer object
         var glbuffer = this.gl.createBuffer();
         if (!glbuffer) {
@@ -97,7 +116,7 @@ export class Shader {
         // Write date into the buffer object
         this.gl.bufferData(this.gl.ARRAY_BUFFER, data, usage);
 
-        let buffer = new ShaderBuffer(glbuffer, data, elementLength);
+        let buffer = new ShaderBuffer(glbuffer, data, elementCount, start, end);
         this.buffers.push(buffer);
         return buffer;
     }
@@ -109,15 +128,16 @@ export class Shader {
      * @param texturePosition 纹理单元队列 默认0位 在片段着色器中至少有8个纹理单元
      * @returns 
      */
-    createTexture(name: string, image: HTMLImageElement, texturePosition: number = 0) {
+    createTexture(name: string, image: HTMLImageElement | { width: number, height: number }, texturePosition: number = 0): Texture {
         var gltexture = this.gl.createTexture();   // Create a texture object
         if (!gltexture) {
             console.log('Failed to create the texture object');
-            return false;
+            return null;
         }
         let uniform = this.createUniform(name, DefinedType.sampler2D);
         let texture = new Texture(uniform, gltexture, image, texturePosition);
-        texture.upload(this.gl);
+        texture.gl = this.gl;
+        // texture.upload(this.gl);
         this.textures.push(texture);
         return texture;
     }
@@ -135,21 +155,53 @@ export class Shader {
 }
 
 export class ShaderBuffer {
-    public count: number;
     public buffer: WebGLBuffer;
     public data: Float32Array;
-    public elementLength: number;
-    constructor(buffer: WebGLBuffer, data: Float32Array, elementLength: number) {
+    public elementCount: number;
+    public offset: number;
+    public count: number;
+    constructor(buffer: WebGLBuffer, data: Float32Array, elementCount: number, start: number = 0, end: number = 0) {
         this.buffer = buffer;
         this.data = data;
-        this.elementLength = elementLength;
-        this.count = data.length / elementLength; // The number of vertices
+        this.elementCount = elementCount;
+        this.offset = start;
+        this.count = ((end ? end : data.length) - start) / elementCount; // The number of vertices
     }
+    update(location: number, size: number, stride: number, position: number) {
+        let gl = RenderContext.inst.gl;
+        // Enable the assignment to a_Position variable
+        gl.enableVertexAttribArray(location as number);
+        // bind the texcoord buffer.
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer);
+        //数组中每个元素的字节大小。
+        //const FSIZE = this.buffer.data.BYTES_PER_ELEMENT;
+        // Assign the buffer object to a_Position variable
 
-    draw(gl: WebGLRenderingContext) {
-        // Draw the rectangle
-        gl.drawArrays(gl.TRIANGLES, 0, this.count);
+        //指定数据的类型
+        let type = gl.FLOAT;
+        //是否将非浮点型数据归一化 - 默认 true
+        let normalized = false;
+
+        console.log("vertexAttribPointer:", size, type, normalized, this.data.BYTES_PER_ELEMENT * stride, this.data.BYTES_PER_ELEMENT * position);
+        gl.vertexAttribPointer(
+            //指定分配 attribute 中的存储地址
+            location,
+            //指定缓冲区每个顶点分量的个数 1-4
+            size,
+            //指定数据的类型
+            type,
+            //是否将非浮点型数据归一化 - 默认 true
+            normalized,
+            //指定相邻两个顶点间的字节数 - 默认 0
+            this.data.BYTES_PER_ELEMENT * stride,
+            //指定缓冲区对象中的偏移量 - 默认 0
+            this.data.BYTES_PER_ELEMENT * position);
     }
+    // draw(gl: WebGLRenderingContext) {
+    //     // Draw the rectangle
+    //     console.log("drawArrays:", this.offset, this.count);
+    //     gl.drawArrays(gl.TRIANGLES, this.offset, this.count);
+    // }
 }
 
 export abstract class ShaderProperty {
@@ -183,6 +235,10 @@ export abstract class ShaderProperty {
                     gl.uniform1i(this.location, this.value);
                 }
                 break;
+
+            case DefinedType.float_array:
+                gl.uniform1fv(this.location, this.value);
+                break
             case DefinedType.float:
             case DefinedType.vec2:
             case DefinedType.vec3:
@@ -208,6 +264,7 @@ export abstract class ShaderProperty {
 export class Attribute extends ShaderProperty {
     public buffer: ShaderBuffer;
     public length: number;
+    public stride: number;
     public position: number;
     constructor(name: string, type: DefinedType, location: WebGLUniformLocation | number) {
         super(name, type, location);
@@ -216,15 +273,16 @@ export class Attribute extends ShaderProperty {
      * 链接缓冲区数据
      * @param gl gl上下文
      * @param buffer 创建的缓冲区数据封装对象
-     * @param length 取缓冲区数据元素的长度 
+     * @param size 取缓冲区数据元素的长度 
      * @param position 取缓冲区数据元素的起始位置
      * - 比如缓冲区数据[x,y,r,g,b,....],其元素长度为5 
      * - position的长度为2 位置为0
      * - color的长度为3 位置为2
      */
-    linkBuffer(buffer: ShaderBuffer, length: number, position: number) {
+    linkBuffer(buffer: ShaderBuffer, size: number, stride: number, position: number) {
         this.buffer = buffer;
-        this.length = length;
+        this.length = size;
+        this.stride = stride;
         this.position = position;
         return this;
     }
@@ -234,25 +292,7 @@ export class Attribute extends ShaderProperty {
      * @param gl 
      */
     upload() {
-        let gl: WebGLRenderingContext = this.gl;
-        //数组中每个元素的字节大小。
-        //const FSIZE = this.buffer.data.BYTES_PER_ELEMENT;
-        // Assign the buffer object to a_Position variable
-        //指定分配 attribute 中的存储地址
-        let location = this.location as number;
-        //指定缓冲区每个顶点分量的个数 1-4
-        let size = this.length;
-        //指定数据的类型
-        let type = gl.FLOAT;
-        //是否将非浮点型数据归一化 - 默认 true
-        let normalized = false;
-        //指定相邻两个顶点间的字节数 - 默认 0
-        let stride = this.buffer.data.BYTES_PER_ELEMENT * this.buffer.elementLength;
-        //指定缓冲区对象中的偏移量 - 默认 0
-        let offset = this.buffer.data.BYTES_PER_ELEMENT * this.position;
-        gl.vertexAttribPointer(location, size, type, normalized, stride, offset);
-        // Enable the assignment to a_Position variable
-        gl.enableVertexAttribArray(this.location as number);
+        this.buffer.update(this.location as number, this.length, this.stride, this.position);
     }
 }
 
@@ -266,30 +306,80 @@ export class Uniform extends ShaderProperty {
 export class Texture {
     public sample: Uniform;
     public gltexture: WebGLTexture;
-    public image: HTMLImageElement;
+    public image: HTMLImageElement | { width: number, height: number };
     public position: number;
-    constructor(sample: Uniform, gltexture: WebGLTexture, image: HTMLImageElement, position: number = 0) {
+    public frameBuffer: WebGLFramebuffer;
+    public gl: WebGLRenderingContext;
+    constructor(sample: Uniform, gltexture: WebGLTexture, image: HTMLImageElement | { width: number, height: number }, position: number = 0) {
         this.sample = sample;
         this.gltexture = gltexture;
         this.image = image;
         this.position = position;
     }
 
-    upload(gl: WebGLRenderingContext) {
+    enableFramebuffer() {
+        let gl = this.gl;
+        // Create a framebuffer
+        this.frameBuffer = gl.createFramebuffer();
+        gl.bindFramebuffer(gl.FRAMEBUFFER, this.frameBuffer);
+        // Attach a texture to it.
+        gl.framebufferTexture2D(
+            gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.gltexture, 0);
+    }
+
+    bindFrameBuffer() {
+        let gl = this.gl;
+        gl.bindFramebuffer(gl.FRAMEBUFFER, this.frameBuffer);
+    }
+
+    static clearFrameBuffer() {
+        let gl = RenderContext.inst.gl;
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    }
+
+    active() {
+        let gl = this.gl;
         // Enable texture unit0
         gl.activeTexture(gl.TEXTURE0 + this.position);
-        // Bind the texture object to the target
+    }
+    bind(){
+        let gl = this.gl;
         gl.bindTexture(gl.TEXTURE_2D, this.gltexture);
+        this.sample.set(this.position);
+    }
+    set(type: "LINEAR" | "CLAMP_TO_EDGE") {
+        let gl = this.gl;
+        // Bind the texture object to the target
+        
+        this.bind();
         // Set the texture parameters
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-        // gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-        // gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-        // gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-        // gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-        // Set the texture image
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.image);
+        if (type == "LINEAR") {
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+        }
+        if (type == "CLAMP_TO_EDGE") {
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+        }
+        if (this.image instanceof HTMLImageElement) {
+            gl.texImage2D(
+                gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.image);
+        } else {
+            gl.texImage2D(
+                gl.TEXTURE_2D, 0, gl.RGBA, this.image.width, this.image.height, 0,
+                gl.RGBA, gl.UNSIGNED_BYTE, null);
+        }
         // Set the texture unit 0 to the sampler
         // gl.uniform1i(u_Sampler, 0);
-        this.sample.set(0);
     }
+
+    // upload() {
+    //     let gl = this.gl;
+    //     // Set the texture image
+    //     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.image);
+    //     // Set the texture unit 0 to the sampler
+    //     // gl.uniform1i(u_Sampler, 0);
+    //     this.sample.set(this.position);
+    // }
 }

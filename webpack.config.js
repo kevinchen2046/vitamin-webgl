@@ -3,13 +3,13 @@ const os = require('os');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin')
 
 let common_config = {
-    entry: ['./src/main'],
+    entry: ['./src/main.ts'],
     output: {
         filename: 'js/bundle.js',
         path: path.join(__dirname, 'dist'),
     },
     resolve: {
-        extensions: ['.ts', '.js', '.json'],
+        extensions: ['.ts', /*'.js',*/ '.json'],
         modules: [
             path.resolve('.'),
             path.join(__dirname, "dist"),

@@ -22,10 +22,16 @@ export class RenderProgram {
         gl.clear(gl.COLOR_BUFFER_BIT);
     }
 
+    use(){
+        let gl = this.gl;
+        // Tell it to use our program (pair of shaders)
+        gl.useProgram(gl.program);
+    }
+
     updateRender() {
         this.clear();
         for (let i = 0; i < this.shaders.length; i++) {
-            this.shaders[i].updateRender();
+            this.shaders[i].draw();
         }
     }
 }

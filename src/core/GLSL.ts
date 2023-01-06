@@ -18,7 +18,7 @@ function createGlslObject() {
 }
 type GLSLInfo = {
     attributes: { name: string, type: DefinedType }[],
-    uniforms: { name: string, type: DefinedType }[],
+    uniforms: { name: string, type: DefinedType, length?: number }[],
     varyings: { name: string, type: DefinedType }[],
     methods: { content: string, types: { params: DefinedType | DefinedType[], type: DefinedType } }[],
     precision: string
@@ -50,7 +50,7 @@ export enum Define {
 }
 
 export enum DefinedType {
-    sampler2D, float, vec2, vec3, vec4, mat2, mat3, mat4, int
+    sampler2D, float, float_array, vec2, vec3, vec4, mat2, mat3, mat4, int
 }
 
 let DefinedTypeData = {};
@@ -78,6 +78,8 @@ export class vec2 {
     get xy() {
         return new vec2(this.x, this.y);
     }
+
+    get __() { return null as any }
 }
 
 export class vec3 {
@@ -129,6 +131,8 @@ export class vec3 {
     get gbr() { return new vec3(this.x, this.y, this.z); }
     get bg() { return new vec3(0, this.y, this.z); }
     get bgr() { return new vec3(this.x, this.y, this.z); }
+
+    get __() { return null as any }
 }
 
 export class vec4 {
@@ -206,6 +210,8 @@ export class vec4 {
     get gbr() { return new vec4(this.x, this.y, this.z); }
     get bg() { return new vec4(0, this.y, this.z); }
     get bgr() { return new vec4(this.x, this.y, this.z); }
+
+    get __() { return null as any }
 }
 
 export class mat2 { }
@@ -215,13 +221,13 @@ export class mat4 { }
 export class sampler2D { }
 export class samplerCube { }
 
-export function _vec2(x: float, y: float) {
+export function __vec2(x: float, y: float) {
     return new vec2();
 }
-export function _vec3(x: float, y: float, z: float) {
+export function __vec3(x: float, y: float, z: float) {
     return new vec3();
 }
-export function _vec4(x: float, y: float, z: float, w: float) {
+export function __vec4(x: float, y?: float, z?: float, w?: float) {
     return new vec4();
 }
 
@@ -372,13 +378,13 @@ export function attribute(type: DefinedType) {
 }
 
 /**固定值 */
-export function uniform(type: DefinedType) {
+export function uniform(type: DefinedType, length?: number) {
     return function (clazz, name: string) {
         let clzname = getClazzName(clazz);
         if (!glslMap[clzname]) glslMap[clzname] = createGlslObject();
         if (!glslMap[clzname].uniforms) glslMap[clzname].uniforms = [];
         let uniforms = glslMap[clzname].uniforms;
-        uniforms.push({ name: name, type: type });
+        uniforms.push({ name: name, type: type, length: length });
     }
 }
 
@@ -484,7 +490,13 @@ export function getGlsl(clazz) {
         }),
         ...info.uniforms.map(v => {
             let type = EnumUtil.getKey(DefinedType, v.type);
-            return `uniform ${type} ${v.name};`
+            let length = ``;
+            if (v.type == DefinedType.float_array) {
+                type = "float";
+                length = `[${v.length}]`;
+            }
+
+            return `uniform ${type} ${v.name}${length};`
         }),
         ...info.varyings.map(v => {
             let type = EnumUtil.getKey(DefinedType, v.type);
@@ -493,37 +505,53 @@ export function getGlsl(clazz) {
         ...info.methods.map(v => {
             let results = v.content.match(/(\()(.*)(\))/);
 
-            let params=results[2].split(",").map((v1, i) => {
+            let params = results[2].split(",").map((v1, i) => {
                 let type = Array.isArray(v.types.params) ? (i >= v.types.params.length ? v.types.params[v.types.params.length - 1] : v.types.params[i]) : v.types.params;
                 return `${EnumUtil.getKey(DefinedType, type)} ${v1.trim()}`;
             });
-            let content=`${EnumUtil.getKey(DefinedType, v.types.type)} ${v.content.replace(results[2],params.join(","))}`;
+            let content = `${EnumUtil.getKey(DefinedType, v.types.type)} ${v.content.replace(results[2], params.join(","))}`;
             return content;
         }),
         `void ${((content: string) => {
+            let glslIndex = content.search(/(glsl`)|(glsl `)/g);
+            if (glslIndex >= 0) {
+                return `main() {\n${content.split("`")[1].split("\n").map(v=>{
+                    v = trimLeft(v);
+                    if(v.search("//")==0) return '';
+                    return `    ${v}`;
+                }).filter(v=>!!v).join("\n")}\n}`;
+            }
             let lines = content.split("\n");
             lines = lines.map(v => {
                 v = trimLeft(v);
+                if(v.search("//")==0) return '';
                 v = v.replace(/this./g, "");
-                v = v.replace(/_vec2/g, "vec2");
-                v = v.replace(/_vec3/g, "vec3");
-                v = v.replace(/_vec4/g, "vec4");
+                v = v.replace(/__vec2/g, "vec2");
+                v = v.replace(/__vec3/g, "vec3");
+                v = v.replace(/__vec4/g, "vec4");
                 v = v.replace(/GLSL_[0-9]./g, "");
+                v = v.replace(/.__/g, "");
                 if (/let |var /g.test(v)) {
                     //todo...类型推断
+                    if (v.search("//@") > 0) {
+                        let _vectype=v.substring(v.search("//@"))
+                        v = v.replace(/let |var /g, `${_vectype.substring(3)} `).replace(_vectype,"");
+                    }
                     let expression = v.split("=")[1];
                     expression = trim(expression);
                     let type = getReturnType(expression);
                     v = v.replace(/let |var /g, `${type} `);
                 }
                 return v;
-            });
+            }).filter(v=>!!v);
             return [lines.slice(0, lines.length - 1).join("\n  "), lines[lines.length - 1]].join("\n")
             //return lines.join("\n   ");
         })(clazz.prototype.main.toString())}`
     ].join("\n");
 }
+export function glsl(...args) {
 
+}
 /**顶点着色器模板 */
 export class GLSL_Vertex {
     protected gl_Position: vec4;
@@ -534,7 +562,7 @@ export class GLSL_Vertex {
 /**片段着色器模板 */
 export class GLSL_Fragment {
     protected gl_FragColor: vec4;
-    protected u_image: sampler2D;
+    // protected u_image: sampler2D;
     protected main() {
     }
 }

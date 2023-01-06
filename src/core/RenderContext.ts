@@ -5,6 +5,15 @@ export class RenderContext {
     public frame: number;
     private programs: RenderProgram[];
     private ticks: Function[];
+    private static _inst: RenderContext;
+    public static create(canvas: HTMLCanvasElement) {
+        if (!RenderContext._inst) {
+            new RenderContext(canvas)
+        }
+    }
+    public static get inst() {
+        return RenderContext._inst;
+    }
     constructor(canvas: HTMLCanvasElement) {
         this.gl = Utils.getWebGLContext(canvas);
         if (!this.gl) {
@@ -23,6 +32,7 @@ export class RenderContext {
             window.requestAnimationFrame(__loop);
         }
         __loop();
+        RenderContext._inst = this;
     }
 
     createProgram() {
