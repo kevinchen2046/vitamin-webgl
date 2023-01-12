@@ -1,7 +1,8 @@
 import { Geometry } from "./Geometry";
-import { attribute, cos, DefinedType, float, GLSL_Fragment, GLSL_Vertex, method, precision, PrecisionType, sampler2D, sin, smoothstep, texture2D, uniform, varying, vec2, __vec2, __vec4 } from "./core/GLSL";
-import { RenderContext } from "./core/RenderContext";
+import { attribute, cos, DefinedType, float, GLSL_Fragment, GLSL_Vertex, method, precision, PrecisionType, sampler2D, sin, smoothstep, texture2D, uniform, varying, vec2, __vec2, __vec4 } from "../core/GLSL";
+import { Context } from "../core/Context";
 import { Loader } from "./Util";
+import { TypeTextureDraw } from "../core/Texture";
 
 @precision(PrecisionType.mediump)
 class MyVS extends GLSL_Vertex {
@@ -66,31 +67,29 @@ export class HelloWebGL {
     async initialize() {
         var canvas = document.getElementById('webgl');
         //创建渲染器
-        let context = new RenderContext(canvas as HTMLCanvasElement);
+        Context.initialize(canvas as HTMLCanvasElement);
         //创建Shader
-        let shader = context.createProgram().createShader(MyVS, MyFS);
+        let shader = Context.createProgram().createShader(MyVS, MyFS);
         shader.printf();
         //创建几何面
         let geometry = new Geometry(8, 8);
         geometry.update();
         //创建Buffer
-        let buffer = shader.createBuffer(geometry.buffer, 5, context.gl.DYNAMIC_DRAW);
+        let buffer = shader.createBuffer(geometry.buffer, 5, Context.gl.DYNAMIC_DRAW);
         //将存储属性a_Position链接到Buffer数据
-        shader.getAttribute("a_Position").linkBuffer(buffer, 2, buffer.elementCount, 0);
+        shader.getAttribute("a_Position").linkBuffer(buffer, 2);
         //将存储属性a_Color链接到Buffer数据
         shader.getAttribute("a_Color").linkBuffer(buffer, 3, buffer.elementCount, 2);
         //加载图片
         var image = await Loader.loadImage('./res/yellowflower.jpg');
         //创建纹理
-        let texture = shader.createTexture("u_Sampler", image, 0);
+        shader.createTexture("u_Sampler", image, 0, TypeTextureDraw.LINEAR);
         // texture.active();
-       
-        texture.set("LINEAR")
         //循环渲染
-        context.tick(frame => {
+        Context.addTick(this, frame => {
             //更新u_time值
             shader.set("u_time", frame);
-            context.updateRender();
+            Context.updateRender();
         })
     }
 }

@@ -1,4 +1,4 @@
-import { ColorUtil, Hashtable } from "./core/Util";
+import { ColorUtil, Hashtable } from "../core/Util";
 
 export class Geometry {
     public size: number = 1;

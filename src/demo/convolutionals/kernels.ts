@@ -1,4 +1,46 @@
 // Define several convolution kernels
+export enum TypeKernel{
+    /**无 */
+    normal="normal",
+    /**高斯模糊1*/
+    gaussianBlur="gaussianBlur",
+    /**高斯模糊2*/
+    gaussianBlur2="gaussianBlur2",
+    /**高斯模糊3*/
+    gaussianBlur3="gaussianBlur3",
+    /**反向锐化*/
+    unsharpen="unsharpen",
+    /**增加清晰度*/
+    sharpness="sharpness",
+    /**锐化*/
+    sharpen="sharpen",
+    /**边缘检测1*/
+    edgeDetect="edgeDetect",
+    /**边缘检测2*/
+    edgeDetect2="edgeDetect2",
+    /*边缘检测3*/
+    edgeDetect3="edgeDetect3",
+    /**边缘检测4*/
+    edgeDetect4="edgeDetect4",
+    /**边缘检测5*/
+    edgeDetect5="edgeDetect5",
+    /**边缘检测6*/
+    edgeDetect6="edgeDetect6",
+    /**高水平线*/
+    sobelHorizontal="sobelHorizontal"
+    /**高垂直线*/,
+    sobelVertical="sobelVertical",
+    /**横向交错*/
+    previtHorizontal="previtHorizontal",
+    /**竖向交错*/
+    previtVertical="previtVertical",
+    /**盒状模糊*/
+    boxBlur="boxBlur",
+    /**三角模糊*/
+    triangleBlur="triangleBlur",
+    /**浮雕*/
+    emboss="emboss"
+}
 export let kernels = {
     normal: [
         0, 0, 0,

@@ -64,7 +64,11 @@ function Property(type: string) {
 
 export type float = number;
 
-export class vec2 {
+class data_struct {
+    get __() { return null as any }
+}
+
+export class vec2 extends data_struct {
 
     @Property("float")
     x: float;
@@ -72,17 +76,16 @@ export class vec2 {
     y: float;
 
     constructor(x?: float, y?: float) {
+        super();
         this.x = x;
         this.y = y;
     }
     get xy() {
         return new vec2(this.x, this.y);
     }
-
-    get __() { return null as any }
 }
 
-export class vec3 {
+export class vec3 extends data_struct {
 
     @Property("float")
     x: float;
@@ -92,6 +95,7 @@ export class vec3 {
     z: float;
 
     constructor(x?: float, y?: float, z?: float) {
+        super();
         this.x = x ?? 0;
         this.y = y ?? 0;
         this.z = z ?? 0;
@@ -131,11 +135,9 @@ export class vec3 {
     get gbr() { return new vec3(this.x, this.y, this.z); }
     get bg() { return new vec3(0, this.y, this.z); }
     get bgr() { return new vec3(this.x, this.y, this.z); }
-
-    get __() { return null as any }
 }
 
-export class vec4 {
+export class vec4 extends data_struct {
 
     @Property("float")
     x: float;
@@ -147,6 +149,7 @@ export class vec4 {
     w: float;
 
     constructor(x?: float, y?: float, z?: float, w?: float) {
+        super();
         this.x = x ?? 0;
         this.y = y ?? 0;
         this.z = z ?? 0;
@@ -210,13 +213,11 @@ export class vec4 {
     get gbr() { return new vec4(this.x, this.y, this.z); }
     get bg() { return new vec4(0, this.y, this.z); }
     get bgr() { return new vec4(this.x, this.y, this.z); }
-
-    get __() { return null as any }
 }
 
-export class mat2 { }
-export class mat3 { }
-export class mat4 { }
+export class mat2 extends data_struct { }
+export class mat3 extends data_struct { }
+export class mat4 extends data_struct { }
 
 export class sampler2D { }
 export class samplerCube { }
@@ -515,16 +516,16 @@ export function getGlsl(clazz) {
         `void ${((content: string) => {
             let glslIndex = content.search(/(glsl`)|(glsl `)/g);
             if (glslIndex >= 0) {
-                return `main() {\n${content.split("`")[1].split("\n").map(v=>{
+                return `main() {\n${content.split("`")[1].split("\n").map(v => {
                     v = trimLeft(v);
-                    if(v.search("//")==0) return '';
+                    if (v.search("//") == 0) return '';
                     return `    ${v}`;
-                }).filter(v=>!!v).join("\n")}\n}`;
+                }).filter(v => !!v).join("\n")}\n}`;
             }
             let lines = content.split("\n");
             lines = lines.map(v => {
                 v = trimLeft(v);
-                if(v.search("//")==0) return '';
+                if (v.search("//") == 0) return '';
                 v = v.replace(/this./g, "");
                 v = v.replace(/__vec2/g, "vec2");
                 v = v.replace(/__vec3/g, "vec3");
@@ -534,8 +535,8 @@ export function getGlsl(clazz) {
                 if (/let |var /g.test(v)) {
                     //todo...类型推断
                     if (v.search("//@") > 0) {
-                        let _vectype=v.substring(v.search("//@"))
-                        v = v.replace(/let |var /g, `${_vectype.substring(3)} `).replace(_vectype,"");
+                        let _vectype = v.substring(v.search("//@"))
+                        v = v.replace(/let |var /g, `${_vectype.substring(3)} `).replace(_vectype, "");
                     }
                     let expression = v.split("=")[1];
                     expression = trim(expression);
@@ -543,7 +544,7 @@ export function getGlsl(clazz) {
                     v = v.replace(/let |var /g, `${type} `);
                 }
                 return v;
-            }).filter(v=>!!v);
+            }).filter(v => !!v);
             return [lines.slice(0, lines.length - 1).join("\n  "), lines[lines.length - 1]].join("\n")
             //return lines.join("\n   ");
         })(clazz.prototype.main.toString())}`
