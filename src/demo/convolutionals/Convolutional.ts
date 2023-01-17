@@ -1,5 +1,5 @@
 import { Program } from "typescript";
-import { attribute, cos, DefinedType, float, glsl, GLSL_Fragment, GLSL_Vertex, method, precision, PrecisionType, sampler2D, sin, smoothstep, texture2D, uniform, varying, vec2, __vec2, __vec4 } from "../../core/GLSL";
+import { attribute, cos, DefinedType, float, glsl, GLSL_Fragment, GLSL_Vertex, method, precision, PrecisionType, sampler2D, sin, smoothstep, texture2D, uniform, varying, vec2, _vec2, _vec4 } from "../../core/GLSL";
 import { Context } from "../../core/Context";
 import { Texture, TypeTextureDraw } from "../../core/Texture";
 
@@ -21,12 +21,12 @@ class MyVS extends GLSL_Vertex {
     public v_texCoord: vec2;
     protected main() {
         // convert the rectangle from pixels to 0.0 to 1.0
-        let zeroToOne = this.a_position.__ / this.u_resolution.__;//@vec2
+        let zeroToOne = this.a_position._ / this.u_resolution._;//@vec2
         // convert from 0->1 to 0->2
         let zeroToTwo = zeroToOne * 2.0;//@vec2
         // convert from 0->2 to -1->+1 (clipspace)
         let clipSpace = zeroToTwo - 1.0;//@vec2
-        this.gl_Position = __vec4(clipSpace * __vec2(1, this.u_flipY).__, 0, 1);
+        this.gl_Position = _vec4(clipSpace * _vec2(1, this.u_flipY)._, 0, 1);
         // pass the texCoord to the fragment shader
         // The GPU will interpolate this value between points.
         this.v_texCoord = this.a_texCoord;

@@ -33,7 +33,7 @@ export class Mesh {
                 shader.createBuffer(
                     null,
                     3,
-                    Context.gl.STATIC_DRAW), 3, BufferType.UNSIGNED_BYTE, true); 
+                    Context.gl.STATIC_DRAW), 3, BufferType.UNSIGNED_BYTE, true);
         }
     }
 
@@ -67,10 +67,10 @@ export class Mesh {
 
     updateMatrix(camera: Camera) {
         let transform = this.transform;
-        let position = transform.positon;
+        let position = transform.position;
         let rotation = transform.rotation;
         let scale = transform.scale;
-        var matrix = Matrix4.perspective(camera.fieldOfView, camera.aspect, camera.near, camera.far);
+        var matrix = camera.viewProjectionMatrix;
         matrix = matrix.translate(matrix, position.x, position.y, position.z);
         matrix = matrix.xRotate(matrix, rotation.x);
         matrix = matrix.yRotate(matrix, rotation.y);
@@ -83,7 +83,7 @@ export class Mesh {
     updateRender(camera: Camera) {
         let material = this._material;
         this.updateMatrix(camera);
-        // material.setProperty("u_matrix",Matrix4.multiply(this.matrix,Matrix4.inverse(camera.matrix)));
+        // material.setProperty("u_matrix", Matrix4.multiply(this.matrix, Matrix4.inverse(camera.matrix)));
         material.setProperty("u_matrix", this.matrix);
         material.draw();
     }

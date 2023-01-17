@@ -1,7 +1,7 @@
 import { Attribute } from "../../core/Attribute";
 import { Context } from "../../core/Context";
 import { mat4, vec4 } from "../../core/GLSL";
-import { attribute, DefinedType, GLSL_Fragment, GLSL_Vertex, precision, PrecisionType, sampler2D, uniform, varying, __vec2, __vec4 } from "../../core/GLSL";
+import { attribute, DefinedType, GLSL_Fragment, GLSL_Vertex, precision, PrecisionType, sampler2D, uniform, varying, _vec2, _vec4 } from "../../core/GLSL";
 import { Shader } from "../../core/Shader";
 
 @precision(PrecisionType.mediump)
@@ -22,7 +22,7 @@ class MyVS extends GLSL_Vertex {
 
     protected main() {
         // Multiply the position by the matrix.
-        this.gl_Position.__ = this.u_matrix.__ * this.a_position.__;
+        this.gl_Position._ = this.u_matrix._ * this.a_position._;
 
         // Pass the color to the fragment shader.
         this.v_color = this.a_color;
@@ -42,7 +42,7 @@ class MyFS extends GLSL_Fragment {
     public v_position: vec4;
 
     protected main() {
-        this.gl_FragColor.__ = this.v_color.__*0.8+(this.v_position.__*0.03)*0.2;
+        this.gl_FragColor._ = this.v_color._ * 0.8 + (this.v_position._ * 0.03) * 0.2;
     }
 }
 

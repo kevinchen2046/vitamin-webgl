@@ -1,23 +1,25 @@
+import { Vector3 } from "./D3Face";
+
 export class Transform {
     alpha: number;
     color: { r: number, g: number, b: number };
-    positon: { x: number, y: number, z: number };
-    rotation: { x: number, y: number, z: number };
-    scale: { x: number, y: number, z: number };
-    pivot: { x: number, y: number, z: number }
+    position: Vector3;
+    rotation: Vector3;
+    scale: Vector3;
+    pivot: Vector3
     constructor() {
         this.alpha = 1;
 
-        this.positon = { x: 0, y: 0, z: 0 };
-        this.rotation = { x: 0, y: 0, z: 0 };
-        this.scale = { x: 1, y: 1, z: 1 };
-        this.pivot = { x: 0, y: 0, z: 0 };
+        this.position = new Vector3();
+        this.rotation = new Vector3();
+        this.scale = new Vector3(1,1,1);
+        this.pivot = new Vector3()
     }
 
     public pos(x: number, y?: number, z?: number) {
-        this.positon.x = x;
-        this.positon.y = y ?? x;
-        this.positon.z = z ?? x;
+        this.position.x = x;
+        this.position.y = y ?? x;
+        this.position.z = z ?? x;
     }
 
     public setScale(x: number, y?: number, z?: number) {
@@ -51,25 +53,25 @@ export class Transform {
     }
 
     public set x(v: number) {
-        if (this.positon.x != v) {
-            this.positon.x = v;
+        if (this.position.x != v) {
+            this.position.x = v;
         }
     }
-    public get x() { return this.positon.x }
+    public get x() { return this.position.x }
 
     public set y(v: number) {
-        if (this.positon.y != v) {
-            this.positon.y = v;
+        if (this.position.y != v) {
+            this.position.y = v;
         }
     }
-    public get y() { return this.positon.y }
+    public get y() { return this.position.y }
 
     public set z(v: number) {
-        if (this.positon.z != v) {
-            this.positon.z = v;
+        if (this.position.z != v) {
+            this.position.z = v;
         }
     }
-    public get z() { return this.positon.z }
+    public get z() { return this.position.z }
 
     public set scaleX(v: number) {
         if (this.scale.x != v) {

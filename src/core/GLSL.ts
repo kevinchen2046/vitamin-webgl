@@ -64,9 +64,9 @@ function Property(type: string) {
 
 export type float = number;
 
-class data_struct {
-    set __(v:any){}
-    get __() { return null as any }
+class data_struct  {
+    set _(v: any) { }
+    get _() { return null as any }
 }
 
 export class vec2 extends data_struct {
@@ -223,13 +223,13 @@ export class mat4 extends data_struct { }
 export class sampler2D { }
 export class samplerCube { }
 
-export function __vec2(x: float, y: float) {
+export function _vec2(x: float, y: float) {
     return new vec2();
 }
-export function __vec3(x: float, y: float, z: float) {
+export function _vec3(x: float, y: float, z: float) {
     return new vec3();
 }
-export function __vec4(x: float, y?: float, z?: float, w?: float) {
+export function _vec4(x: float, y?: float, z?: float, w?: float) {
     return new vec4();
 }
 
@@ -528,11 +528,11 @@ export function getGlsl(clazz) {
                 v = trimLeft(v);
                 if (v.search("//") == 0) return '';
                 v = v.replace(/this./g, "");
-                v = v.replace(/__vec2/g, "vec2");
-                v = v.replace(/__vec3/g, "vec3");
-                v = v.replace(/__vec4/g, "vec4");
+                v = v.replace(/_vec2/g, "vec2");
+                v = v.replace(/_vec3/g, "vec3");
+                v = v.replace(/_vec4/g, "vec4");
                 v = v.replace(/GLSL_[0-9]./g, "");
-                v = v.replace(/.__/g, "");
+                v = v.replace(/\._/g, "");
                 if (/let |var /g.test(v)) {
                     //todo...类型推断
                     if (v.search("//@") > 0) {

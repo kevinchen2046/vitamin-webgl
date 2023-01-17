@@ -29,6 +29,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import { vec3 } from "../../core/GLSL";
+import { Vector3 } from "./D3Face";
+
 
 
 /**
@@ -129,7 +132,7 @@ export class Matrix4 extends Float32Array{
      * @return {Vector3} dst or new Vector3 if not provided
      * @memberOf module:webgl-3d-math
      */
-    subtractVectors(a, b, dst?) {
+    static subtractVectors(a:Vector3, b:Vector3, dst?) {
       dst = dst || new Matrix4(3);
       dst[0] = a[0] - b[0];
       dst[1] = a[1] - b[1];
@@ -160,7 +163,7 @@ export class Matrix4 extends Float32Array{
      * @return {Vector3} dst or new Vector3 if not provided
      * @memberOf module:webgl-3d-math
      */
-    normalize(v, dst?) {
+    static normalize(v:vec3, dst?) {
       dst = dst || new Matrix4(3);
       var length = Math.sqrt(v[0] * v[0] + v[1] * v[1] + v[2] * v[2]);
       // make sure we don't divide by 0.
@@ -198,7 +201,7 @@ export class Matrix4 extends Float32Array{
      * @return {Vector3} dst or new Vector3 if not provided
      * @memberOf module:webgl-3d-math
      */
-    cross(a, b, dst?) {
+    static cross(a:vec3, b:vec3, dst?) {
       dst = dst || new Matrix4(3);
       dst[0] = a[1] * b[2] - a[2] * b[1];
       dst[1] = a[2] * b[0] - a[0] * b[2];
@@ -312,7 +315,7 @@ export class Matrix4 extends Float32Array{
      * @return {Matrix4} dst or a new matrix if none provided
      * @memberOf module:webgl-3d-math
      */
-    lookAt(cameraPosition, target, up, dst) {
+    static lookAt(cameraPosition, target, up, dst?) {
       dst = dst || new Matrix4(16);
       var zAxis = this.normalize(this.subtractVectors(cameraPosition, target));
       var xAxis = this.normalize(this.cross(up, zAxis));

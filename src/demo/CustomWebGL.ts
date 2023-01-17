@@ -1,5 +1,5 @@
 import { Geometry } from "./geometry/Geometry";
-import { attribute, cos, DefinedType, float, GLSL_Fragment, GLSL_Vertex, method, precision, PrecisionType, sampler2D, sin, smoothstep, texture2D, uniform, varying, vec2, __vec2, __vec4 } from "../core/GLSL";
+import { attribute, cos, DefinedType, float, GLSL_Fragment, GLSL_Vertex, method, precision, PrecisionType, sampler2D, sin, smoothstep, texture2D, uniform, varying, vec2, _vec2, _vec4 } from "../core/GLSL";
 import { Context } from "../core/Context";
 import { Loader } from "../utils/Util";
 import { TypeTextureDraw } from "../core/Texture";
@@ -35,9 +35,9 @@ class MyVS extends GLSL_Vertex {
         let dis = sin(0.5 - x1) + cos(y1);
         x += sin(dis + time) / 5.0;
         y += cos(dis + time) / 5.0;
-        this.gl_Position = __vec4(x, y, 0.0, 1.0);
+        this.gl_Position = _vec4(x, y, 0.0, 1.0);
         this.v_color = this.a_color;
-        this.v_texcoord = __vec2(this.a_position.x - 0.5, 0.5 - this.a_position.y);
+        this.v_texcoord = _vec2(this.a_position.x - 0.5, 0.5 - this.a_position.y);
     }
 }
 

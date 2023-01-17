@@ -3,8 +3,8 @@ import { Texture, TypeTextureDraw } from "../../core/Texture";
 import { Quad } from "../geometry/Quad";
 import { Loader } from "../../utils/Util";
 import { Matrix3, MatrixUtil } from "./Matrix3";
-import { glsl, mat3, vec3, vec4, __vec3 } from "../../core/GLSL";
-import { attribute, cos, DefinedType, float, GLSL_Fragment, GLSL_Vertex, method, precision, PrecisionType, sampler2D, sin, smoothstep, texture2D, uniform, varying, vec2, __vec2, __vec4 } from "../../core/GLSL";
+import { glsl, mat3, vec3, vec4, _vec3 } from "../../core/GLSL";
+import { attribute, cos, DefinedType, float, GLSL_Fragment, GLSL_Vertex, method, precision, PrecisionType, sampler2D, sin, smoothstep, texture2D, uniform, varying, vec2, _vec2, _vec4 } from "../../core/GLSL";
 import { Shader } from "../../core/Shader";
 
 @precision(PrecisionType.mediump)
@@ -30,8 +30,8 @@ class MyVS extends GLSL_Vertex {
     public v_texcoord: vec2;
 
     protected main() {
-        let position: any = (this.u_matrix.__ * __vec3(this.a_position.x, this.a_position.y, 1.0).__);//@vec3
-        this.gl_Position = __vec4(position.x, position.y, 0.0, 1.0);
+        let position: any = (this.u_matrix._ * _vec3(this.a_position.x, this.a_position.y, 1.0)._);//@vec3
+        this.gl_Position = _vec4(position.x, position.y, 0.0, 1.0);
         this.v_color = this.u_color;
         this.v_texcoord = this.a_texcoord;
         // this.v_texcoord = __vec2(this.a_texcoord.x, this.a_texcoord.y);

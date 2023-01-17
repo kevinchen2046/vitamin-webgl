@@ -1,4 +1,4 @@
-import { D3Face } from "./D3Face";
+import { D3Face, Vector3 } from "./D3Face";
 
 export class D3Geometry {
     public vertexes: number[];
@@ -7,8 +7,8 @@ export class D3Geometry {
         this.vertexes = []
         this.colors = []
         for (let i = 0; i < args.length; i++) {
-            let p = args[i];
-            this.vertexes.push(p.x, p.y, p.z);
+            let p:Vector3 = args[i];
+            this.vertexes.push(...p.vec3);
             this.colors.push(p.color.r, p.color.g, p.color.b);
         }
     }
@@ -19,7 +19,7 @@ export class D3Geometry {
                 -1, -1, 1,
                 1, -1, 1,
                 1, 1, 1,
-                { r: 255, g: 0, b: 0 }, size),
+                { r: 255, g: 0, b: 0 }, size,true),
             ...D3Face.create(
                 -1, 1, -1,
                 -1, -1, -1,
@@ -37,13 +37,13 @@ export class D3Geometry {
                 1, -1, -1,
                 1, 1, -1,
                 1, 1, 1,
-                { r: 128, g: 128, b: 0 }, size),
+                { r: 128, g: 128, b: 0 }, size,true),
             ...D3Face.create(
                 -1, -1, 1,
                 -1, -1, -1,
                 1, -1, -1,
                 1, -1, 1,
-                { r: 0, g: 128, b: 128 }, size),
+                { r: 0, g: 128, b: 128 }, size,true),
             ...D3Face.create(
                 -1, 1, 1,
                 -1, 1, -1,
