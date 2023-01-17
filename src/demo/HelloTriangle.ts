@@ -1,4 +1,4 @@
-import { Geometry } from "./Geometry";
+import { Geometry } from "./geometry/Geometry";
 
 var VSHADER_SOURCE =
 /*glsl*/`
@@ -64,8 +64,7 @@ export class HelloTriangle {
 
 
         // Write the positions of vertices to a vertex shader
-        let geometry = new Geometry(8, 8);
-        geometry.update();
+        let geometry = new Geometry(8, 8, 0.5, 0.5);
         // let vertices = new Float32Array(this.getCutRect(
         //     {
         //         a: { x: -0.5, y: 0.5, color: 0xFF0000, offset: { x: 0, y: 0 } },
@@ -125,7 +124,7 @@ export class HelloTriangle {
             console.log('Failed to get the storage location of u_Sampler');
             return false;
         }
-        var image = await this.loadImage('./res/yellowflower.jpg');
+        var image = await this.loadImage('./res/flower.jpg');
 
         // Enable texture unit0
         gl.activeTexture(gl.TEXTURE0);
@@ -157,7 +156,7 @@ export class HelloTriangle {
             // let st = time / 10;
             // let rate = (1 - Math.sin(st)) / 2;
 
-            geometry.update();
+            geometry.format();
             // Bind the buffer object to target
 
             // Specify the color for clearing <canvas>

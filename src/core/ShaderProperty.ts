@@ -68,6 +68,6 @@ export abstract class ShaderProperty {
         }
     }
 
-    upload() {
+    bind() {
     }
 }

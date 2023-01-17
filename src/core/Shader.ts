@@ -39,7 +39,7 @@ export class Shader {
     draw() {
         let gl = Context.gl;
         this.properties.forEach((value) => {
-            value.upload();
+            value.bind();
         });
         let offset = this.buffers[0].offset;
         let count = this.buffers[0].count;

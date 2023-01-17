@@ -1,4 +1,5 @@
-import { ColorUtil, Hashtable } from "../core/Util";
+import { ColorUtil } from "../../utils/ColorUtil";
+import { Hashtable } from "../../utils/Hashtable";
 
 export class Geometry {
     public size: number = 1;
@@ -7,16 +8,18 @@ export class Geometry {
     public rects: Rect[];
     public values: number[];
     public buffer: Float32Array;
-    constructor(sigX: number, sigY: number) {
+    private _vextexs: Float32Array;
+    private _uvs: Float32Array;
+    constructor(sigX: number, sigY: number, anchorX: number = 0, anchorY: number = 0) {
         this.map = new Hashtable<Point>();
         this.rects = [];
-        let halfX = sigX / 2;
-        let halfY = sigY / 2;
+        let halfX = sigX * anchorX;
+        let halfY = sigY * anchorY;
         for (let b = 0; b <= sigY; b++) {
             for (let a = 0; a <= sigX; a++) {
                 this.map.set(`${a}_${b}`, new Point(
                     (a - halfX) / sigX,
-                    (halfY - b) / sigY,
+                    (b - halfY) / sigY,
                     this.randColor()))
             }
         }
@@ -39,6 +42,9 @@ export class Geometry {
         this.rects.forEach(rect => rect.concat(this.points));
         this.values = new Array(this.points.length * 5);
         this.buffer = new Float32Array(this.values);
+        this._vextexs = new Float32Array(this.points.length * 2);
+        this._uvs = new Float32Array(this.points.length * 2);
+        this.format();
     }
 
     getPoint(a, b) {
@@ -49,7 +55,7 @@ export class Geometry {
         return Math.floor(Math.random() * 0xFFFFFF);
     }
 
-    update() {
+    format() {
         this.points.forEach((p, i) => {
             let index = i * 5;
             this.buffer[index] = p.x;
@@ -58,6 +64,25 @@ export class Geometry {
             this.buffer[index + 3] = p.g;
             this.buffer[index + 4] = p.b;
         });
+        return this.buffer;
+    }
+
+    vertexs(width: number = 1, height: number = 1) {
+        this.points.forEach((p, i) => {
+            let index = i * 2;
+            this._vextexs[index] = p.x * width;
+            this._vextexs[index + 1] = p.y * height;
+        });
+        return this._vextexs;
+    }
+
+    uvs() {
+        this.points.forEach((p, i) => {
+            let index = i * 2;
+            this._uvs[index] = p.x;
+            this._uvs[index + 1] = p.y;
+        });
+        return this._uvs;
     }
 
     pointToString() {

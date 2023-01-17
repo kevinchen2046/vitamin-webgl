@@ -3,7 +3,7 @@ import { attribute, cos, DefinedType, float, glsl, GLSL_Fragment, GLSL_Vertex, m
 import { Context } from "../../core/Context";
 import { Texture, TypeTextureDraw } from "../../core/Texture";
 
-import { Loader } from "../Util";
+import { Loader } from "../../utils/Util";
 import { ConvoUtil } from "./ConvoUtil";
 import { kernels, TypeKernel } from "./kernels";
 
@@ -85,7 +85,7 @@ export class Convolutional {
         let shader = program.createShader(MyVS, MyFS);
         shader.printf();
 
-        this.image = await Loader.loadImage('./res/yellowflower.jpg');
+        this.image = await Loader.loadImage('./res/flower.jpg');
 
         //创建顶点数据并且关联到attribute属性
         shader.getAttribute("a_position").linkBuffer(

@@ -1,4 +1,4 @@
-import { EnumUtil } from "./Util";
+import { EnumUtil } from "../utils/EnumUtil";
 
 
 function getClazzName(clazz) {
@@ -65,6 +65,7 @@ function Property(type: string) {
 export type float = number;
 
 class data_struct {
+    set __(v:any){}
     get __() { return null as any }
 }
 

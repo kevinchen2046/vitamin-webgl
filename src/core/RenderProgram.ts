@@ -1,7 +1,7 @@
 import { GLSL_Fragment, GLSL_Vertex } from "./GLSL";
 import { Context } from "./Context";
 import { Shader } from "./Shader";
-import { ColorUtil } from "./Util";
+import { ColorUtil } from "../utils/ColorUtil";
 
 export class RenderProgram {
     private shaders: Shader[];
@@ -15,7 +15,7 @@ export class RenderProgram {
         return shader;
     }
 
-    clear(color?: number) {
+    clear(color?: number, clearDepth?: boolean) {
         let gl = Context.gl;
         if (color) {
             const { r, g, b } = ColorUtil.extract(color);
@@ -25,7 +25,12 @@ export class RenderProgram {
             gl.clearColor(0, 0, 0, 1);
         }
         // Clear <canvas>
-        gl.clear(gl.COLOR_BUFFER_BIT);
+
+        if (clearDepth) {
+            gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+        } else {
+            gl.clear(gl.COLOR_BUFFER_BIT);
+        }
     }
 
     use() {

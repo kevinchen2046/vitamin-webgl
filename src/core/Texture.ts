@@ -13,13 +13,15 @@ export class Texture {
     public image: HTMLImageElement | { width: number, height: number };
     public position: number;
     public frameBuffer: WebGLFramebuffer;
+    private typedraw:TypeTextureDraw;
     constructor(sample: Uniform, gltexture: WebGLTexture, image: HTMLImageElement | { width: number, height: number }, position: number = 0, typedraw?: TypeTextureDraw) {
         this.sample = sample;
         this.gltexture = gltexture;
         this.image = image;
         this.position = position;
+        this.typedraw=typedraw;
         if (typedraw) {
-            this.set(typedraw);
+            this.update();
         }
     }
 
@@ -55,16 +57,16 @@ export class Texture {
         this.sample.set(this.position);
     }
 
-    set(type: TypeTextureDraw) {
+    update() {
         let gl = Context.gl;
         // Bind the texture object to the target
 
         this.use();
         // Set the texture parameters
-        if (type == TypeTextureDraw.LINEAR) {
+        if (this.typedraw == TypeTextureDraw.LINEAR) {
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
         }
-        if (type == TypeTextureDraw.CLAMP_TO_EDGE) {
+        if (this.typedraw == TypeTextureDraw.CLAMP_TO_EDGE) {
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
@@ -81,13 +83,4 @@ export class Texture {
         // Set the texture unit 0 to the sampler
         // gl.uniform1i(u_Sampler, 0);
     }
-
-    // upload() {
-    //     let gl = gl;
-    //     // Set the texture image
-    //     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.image);
-    //     // Set the texture unit 0 to the sampler
-    //     // gl.uniform1i(u_Sampler, 0);
-    //     this.sample.set(this.position);
-    // }
 }

@@ -1,4 +1,4 @@
-export class Matrix {
+export class Matrix3 {
     private _initial: number[];
     private _data: number[];
     private _translation: number[];
@@ -38,6 +38,10 @@ export class Matrix {
 
     scale(sx: number, sy: number) {
         return this.multiply(MatrixUtil.scalingSet(this._scaling, sx, sy));
+    }
+
+    pivot(x:number,y:number){
+        return this.multiply(MatrixUtil.translationSet(this._translation, x, y));
     }
 
     multiply(b: number[]) {
