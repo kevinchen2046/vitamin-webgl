@@ -4,36 +4,26 @@ import { Matrix4 } from "./Matrix4";
 import { Camera } from "./Camera";
 import { Transform } from "./Transform";
 import { BufferType } from "../../core/ShaderBuffer";
+import { EventEmiter } from "../../utils/EventEmiter";
 
-export class Mesh {
+export class Mesh extends EventEmiter{
 
     private _matrix: Matrix4;
     private _transform: Transform;
     private _vertexes: Float32Array;
     private _colors: Uint8Array;
     private _material: Material;
-    constructor() {
+    constructor(material?:Material) {
+        super();
         this._transform = new Transform();
+
+        this.material=material;
     }
 
     public set material(v: Material) {
-        this._material = v;
-        if (this._material) {
-            this._material.createShader();
-            let shader = this._material.shader;
-            //创建顶点数据并且关联到attribute属性
-            shader.getAttribute("a_position").linkBuffer(
-                shader.createBuffer(
-                    null,
-                    3,
-                    Context.gl.STATIC_DRAW));
-
-            //创建纹理坐标uv数据并且关联到attribute属性
-            shader.getAttribute("a_color").linkBuffer(
-                shader.createBuffer(
-                    null,
-                    3,
-                    Context.gl.STATIC_DRAW), 3, BufferType.UNSIGNED_BYTE, true);
+        if (this._material!=v) {
+            this._material = v;
+            this.emit("MATERIAL_CHANGE",this);
         }
     }
 
@@ -76,15 +66,8 @@ export class Mesh {
         matrix = matrix.yRotate(matrix, rotation.y);
         matrix = matrix.zRotate(matrix, rotation.z);
         matrix = matrix.scale(matrix, scale.x, scale.y, scale.z);
-        this._matrix = matrix;
+        this._matrix=matrix;
+        this._material.setProperty("u_matrix", this._matrix);
         return matrix;
-    }
-
-    updateRender(camera: Camera) {
-        let material = this._material;
-        this.updateMatrix(camera);
-        // material.setProperty("u_matrix", Matrix4.multiply(this.matrix, Matrix4.inverse(camera.matrix)));
-        material.setProperty("u_matrix", this.matrix);
-        material.draw();
     }
 }

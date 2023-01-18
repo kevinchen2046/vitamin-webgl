@@ -11,19 +11,40 @@ export class Scene {
         var canvas = document.getElementById('webgl');
         //创建渲染器
         Context.initialize(canvas as HTMLCanvasElement);
-        //创建Shader
+        //创建Program
         Context.createProgram();
 
         this.meshs = [];
-        this.camera=new Camera();
+        this.camera = new Camera();
     }
 
     public compile(material: Material) {
-        material.createShader()
+        material.initShader()
     }
 
     public addChild(mesh: Mesh) {
         this.meshs.push(mesh);
- 
+        mesh.on("MATERIAL_CHANGE", this, this.meterialChange);
+        this.meterialChange();
+    }
+
+    private meterialChange() {
+        let program = Context.defaultProgram;
+        program.unlink();
+        this.meshs.forEach(mesh=>{
+            mesh.material?.initShader();
+        });
+        program.link();
+        this.meshs.forEach(mesh=>{
+            mesh.material?.initialize();
+        });
+    }
+
+    public updateRender(){
+        this.camera.updateRender();
+        for(let i=0;i<this.meshs.length;i++){
+            this.meshs[i].updateMatrix(this.camera);
+        }
+        Context.defaultProgram.updateRender();
     }
 }

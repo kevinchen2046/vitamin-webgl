@@ -17,38 +17,40 @@ export class Vector3 {
     public get z() { return this.vec3[2] }
 }
 export class D3Face {
-    // public points: { x: number, y: number, z: number, color: Color }[];
-    // public color: Color;
-    static create(
+    public vectors: Vector3[];
+    public color: Color;
+
+    constructor(
         ax: number, ay: number, az: number,
         bx: number, by: number, bz: number,
         cx: number, cy: number, cz: number,
         dx: number, dy: number, dz: number,
         color: Color, size: number = 1, inverse: boolean = false) {
-        let points = [];
+        let vectors = [];
         let a = this.createPoint(ax * size, ay * size, az * size, color);
         let b = this.createPoint(bx * size, by * size, bz * size, color);
         let c = this.createPoint(cx * size, cy * size, cz * size, color);
         let d = this.createPoint(dx * size, dy * size, dz * size, color);
 
         if (inverse) {
-            points.push(a);
-            points.push(b);
-            points.push(d);
-            points.push(c);
-            points.push(d);
-            points.push(b);
+            vectors.push(a);
+            vectors.push(b);
+            vectors.push(d);
+            vectors.push(c);
+            vectors.push(d);
+            vectors.push(b);
         } else {
-            points.push(a);
-            points.push(d);
-            points.push(b);
-            points.push(c);
-            points.push(b);
-            points.push(d);
+            vectors.push(a);
+            vectors.push(d);
+            vectors.push(b);
+            vectors.push(c);
+            vectors.push(b);
+            vectors.push(d);
         }
-        return points;
+        this.vectors = vectors;
+        this.color=color;
     }
-    private static createPoint(x: number, y: number, z: number, color: Color) {
+    private createPoint(x: number, y: number, z: number, color: Color) {
         return new Vector3(x, y, z, color)
     }
 }

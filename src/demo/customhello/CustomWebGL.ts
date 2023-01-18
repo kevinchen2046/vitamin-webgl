@@ -1,9 +1,10 @@
 import { Geometry } from "./geometry/Geometry";
-import { attribute, cos, DefinedType, float, GLSL_Fragment, GLSL_Vertex, method, precision, PrecisionType, sampler2D, sin, smoothstep, texture2D, uniform, varying, vec2, _vec2, _vec4 } from "../core/GLSL";
-import { Context } from "../core/Context";
-import { Loader } from "../utils/Util";
-import { TypeTextureDraw } from "../core/Texture";
-import { BufferType } from "../core/ShaderBuffer";
+import { attribute, cos, DefinedType, float, GLSL_Fragment, GLSL_Vertex, method, precision, PrecisionType, sampler2D, sin, smoothstep, texture2D, uniform, varying, vec2, _vec2, _vec4 } from "../../core/GLSL";
+import { Context } from "../../core/Context";
+import { Loader } from "../../utils/Util";
+
+import { BufferType } from "../../core/ShaderBuffer";
+import { TextureMap, TextureWrap } from "../../core/Texture";
 
 @precision(PrecisionType.mediump)
 class MyVS extends GLSL_Vertex {
@@ -69,9 +70,12 @@ export class CustomWebGL {
         var canvas = document.getElementById('webgl');
         //创建渲染器
         Context.initialize(canvas as HTMLCanvasElement);
+        let program = Context.createProgram();
         //创建Shader
-        let shader = Context.createProgram().createShader(MyVS, MyFS);
+        let shader = program.createShader(MyVS, MyFS);
         shader.printf();
+        program.link();
+        program.use();
         //创建几何面 
         //几何面的顶点数据包含坐标和颜色,所以单个顶点应该长度5
         let geometry = new Geometry(4, 4, 0.5, 0.5);
@@ -84,8 +88,12 @@ export class CustomWebGL {
         //加载图片
         var image = await Loader.loadImage('./res/flower.jpg');
         //创建纹理
-        shader.createTexture("u_sampler", image, 0, TypeTextureDraw.LINEAR);
-        // texture.active();
+        program.createTexture(image, {
+            uniformName: "u_sampler",
+            samplePosition: 0,
+            map: { min: TextureMap.LINEAR }
+        });
+        
         //循环渲染
         Context.addTick(this, frame => {
             //更新u_time值

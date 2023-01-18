@@ -567,4 +567,8 @@ export class GLSL_Fragment {
     // protected u_image: sampler2D;
     protected main() {
     }
+
+    protected texture2D(a,b){
+        return null as any;
+    }
 }

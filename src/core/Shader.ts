@@ -2,38 +2,98 @@ import { Attribute } from "./Attribute";
 import { DefinedType, getGlsl, getGlslInfo, GLSL_Fragment, GLSL_Vertex } from "./GLSL";
 import { Context } from "./Context";
 import { BufferUsage, ShaderBuffer } from "./ShaderBuffer";
-import { Texture, TypeTextureDraw } from "./Texture";
+import { Texture, TextureOptions } from "./Texture";
 import { Uniform } from "./Uniform";
+import { Program } from "./Program";
 
 export class Shader {
-
+    private program: Program;
     private buffers: ShaderBuffer[];
-    private textures: Texture[];
+
     private properties: Map<string, Uniform | Attribute>;
+    public vsclzz:any;
+    public fsclzz:any;
     public vertexString: string;
     public framentString: string;
+    public vertex: WebGLShader;
+    public frament: WebGLShader;
     private textureFrameBuffer: Texture;
-    constructor(vs: { new(): GLSL_Vertex }, ps: { new(): GLSL_Fragment }) {
-
+    constructor(program: Program, vs: { new(): GLSL_Vertex }, fs: { new(): GLSL_Fragment }) {
+        this.program = program;
         //console.log(getGlsl(vs));
+        this.vsclzz=vs;
+        this.fsclzz=fs;
         this.vertexString = getGlsl(vs);
-        this.framentString = getGlsl(ps);
-        if (!Utils.initShaders(Context.gl, this.vertexString, this.framentString)) {
+        this.framentString = getGlsl(fs);
+        let result = this.initShaders(Context.gl, this.vertexString, this.framentString)
+        if (!result) {
             console.error('Failed to intialize shaders.');
             return;
         }
+        this.vertex = result.vertex;
+        this.frament = result.fragment;
         this.properties = new Map();
         this.buffers = [];
-        this.textures = [];
+    }
 
-        let vsInfo = getGlslInfo(vs);
-        vsInfo.attributes.forEach(value => this.createAttribute(value.name, value.type));
-        vsInfo.uniforms.forEach(value => this.createUniform(value.name, value.type));
+    initialize(){
+        let vsinfo = getGlslInfo(this.vsclzz);
+        vsinfo.attributes.forEach(value => this.createAttribute(value.name, value.type));
+        vsinfo.uniforms.forEach(value => this.createUniform(value.name, value.type));
         // vsInfo.varyings.forEach(value => this.createVarying(value.name, value.type));
-        let psInfo = getGlslInfo(ps);
-        psInfo.attributes.forEach(value => this.createAttribute(value.name, value.type));
-        psInfo.uniforms.forEach(value => this.createUniform(value.name, value.type));
+        let fsinfo = getGlslInfo(this.fsclzz);
+        fsinfo.attributes.forEach(value => this.createAttribute(value.name, value.type));
+        fsinfo.uniforms.forEach(value => this.createUniform(value.name, value.type));
         // psInfo.varyings.forEach(value => this.createVarying(value.name, value.type));
+    }
+
+    /**
+     * 创建链接的program对象
+     * @param gl GL 渲染上下文
+     * @param vshader 顶点着色器程序 (string)
+     * @param fshader 片段着色器程序 (string)
+     * @return 已创建program对象，如果创建失败，则为空
+     */
+    private initShaders(gl: WebGLRenderingContext, vshader, fshader) {
+        // Create shader object
+        var vertexShader = this.loadShader(gl, gl.VERTEX_SHADER, vshader);
+        var fragmentShader = this.loadShader(gl, gl.FRAGMENT_SHADER, fshader);
+        if (!vertexShader || !fragmentShader) {
+            return null;
+        }
+        return { vertex: vertexShader, fragment: fragmentShader }
+    }
+
+    /**
+     * Create a shader object
+     * @param gl GL context
+     * @param type the type of the shader object to be created
+     * @param source shader program (string)
+     * @return created shader object, or null if the creation has failed.
+     */
+    private loadShader(gl: WebGLRenderingContext, type, source) {
+        // Create shader object
+        var shader = gl.createShader(type);
+        if (shader == null) {
+            console.log('unable to create shader');
+            return null;
+        }
+
+        // Set the shader program
+        gl.shaderSource(shader, source);
+
+        // Compile the shader
+        gl.compileShader(shader);
+
+        // Check the result of compilation
+        var compiled = gl.getShaderParameter(shader, gl.COMPILE_STATUS);
+        if (!compiled) {
+            var error = gl.getShaderInfoLog(shader);
+            console.log('Failed to compile shader: ' + error);
+            gl.deleteShader(shader);
+            return null;
+        }
+        return shader;
     }
 
     draw() {
@@ -52,7 +112,7 @@ export class Shader {
         }
         gl.drawArrays(gl.TRIANGLES, offset, count);
         if (this.textureFrameBuffer) {
-            this.textureFrameBuffer.use();
+            this.textureFrameBuffer.bind();
             this.textureFrameBuffer = null;
         }
     }
@@ -60,37 +120,26 @@ export class Shader {
     get(name: string) {
         return this.properties.get(name)
     }
+
     getAttribute(name: string) {
         return this.properties.get(name) as Attribute
     }
+
     set(name: string, value: any) {
         if (!this.properties.has(name)) return;
         this.properties.get(name)?.set(value);
     }
 
     createUniform(name: string, type: DefinedType) {
-        let gl = Context.gl;
         if (this.properties.has(name)) return this.properties.get(name);
-        let ext = (type == DefinedType.float_array) ? `[0]` : "";
-        let location = gl.getUniformLocation(gl.program, name as string + ext);
-        if (location < 0) {
-            console.error(`Failed to get the storage location of ${name as string}`);
-            return;
-        }
-        let uniform = new Uniform(name as string, type, location);
-        this.properties.set(name, uniform);
+        let uniform = this.program.createUniform(name, type);
+        if (uniform) this.properties.set(name, uniform);
         return uniform;
     }
 
     createAttribute(name: string, type: DefinedType) {
-        let gl = Context.gl;
         if (this.properties.has(name)) return this.properties.get(name);
-        let location = gl.getAttribLocation(gl.program, name as string);
-        if (location < 0) {
-            console.error(`Failed to get the storage location of ${name as string}`);
-            return;
-        }
-        let attribute = new Attribute(name as string, type, location);
+        let attribute = this.program.createAttribute(name, type);
         this.properties.set(name, attribute);
         return attribute;
     }
@@ -111,31 +160,6 @@ export class Shader {
         let buffer = new ShaderBuffer(data, elementCount, usage, start, end);
         this.buffers.push(buffer);
         return buffer;
-    }
-
-    /**
-     * 创建纹理
-     * @param name 取样器名称
-     * @param image 已加载完成的HTMLImageElement元素对象
-     * @param texturePosition 纹理单元队列 默认0位 在片段着色器中至少有8个纹理单元
-     * @returns 
-     */
-    createTexture(
-        name: string,
-        image: HTMLImageElement | { width: number, height: number },
-        texturePosition: number = 0,
-        typedraw?: TypeTextureDraw): Texture {
-        let gl = Context.gl;
-        var gltexture = gl.createTexture();   // Create a texture object
-        if (!gltexture) {
-            console.log('Failed to create the texture object');
-            return null;
-        }
-        let uniform = this.createUniform(name, DefinedType.sampler2D);
-        let texture = new Texture(uniform, gltexture, image, texturePosition, typedraw);
-        // texture.upload(gl);
-        this.textures.push(texture);
-        return texture;
     }
 
     /**

@@ -1,7 +1,7 @@
 import { Program } from "typescript";
 import { attribute, cos, DefinedType, float, glsl, GLSL_Fragment, GLSL_Vertex, method, precision, PrecisionType, sampler2D, sin, smoothstep, texture2D, uniform, varying, vec2, _vec2, _vec4 } from "../../core/GLSL";
 import { Context } from "../../core/Context";
-import { Texture, TypeTextureDraw } from "../../core/Texture";
+import { Texture, TextureMap, TextureWrap } from "../../core/Texture";
 
 import { Loader } from "../../utils/Util";
 import { ConvoUtil } from "./ConvoUtil";
@@ -85,6 +85,9 @@ export class Convolutional {
         let shader = program.createShader(MyVS, MyFS);
         shader.printf();
 
+        program.link();
+        program.use();
+
         this.image = await Loader.loadImage('./res/flower.jpg');
 
         //创建顶点数据并且关联到attribute属性
@@ -93,7 +96,7 @@ export class Convolutional {
                 ConvoUtil.createRectangleData(0, 0, this.image.width, this.image.height),
                 2,
                 Context.gl.STATIC_DRAW));
-            
+
         //创建纹理坐标uv数据并且关联到attribute属性
         shader.getAttribute("a_texCoord").linkBuffer(
             shader.createBuffer(
@@ -107,16 +110,27 @@ export class Convolutional {
                 ],
                 2,
                 Context.gl.STATIC_DRAW));
-        
-        
-        this.originalTexture = shader.createTexture("u_image", this.image, 0, TypeTextureDraw.CLAMP_TO_EDGE);
 
+
+        this.originalTexture = program.createTexture(this.image,
+            {
+                uniformName: "u_image",
+                samplePosition: 0,
+                wrap: { s: TextureWrap.CLAMP_TO_EDGE, t: TextureWrap.CLAMP_TO_EDGE },
+                map: { min: TextureMap.LINEAR }
+            });
         /**
          * 创造两个纹理交替渲染
          */
         this.processTextures = [];
         for (var ii = 0; ii < 2; ++ii) {
-            let texture = shader.createTexture("u_image", { width: this.image.width, height: this.image.height }, 0, TypeTextureDraw.CLAMP_TO_EDGE);
+            let texture = program.createTexture({ width: this.image.width, height: this.image.height },
+                {
+                    uniformName: "u_image",
+                    samplePosition: 0,
+                    wrap: { s: TextureWrap.CLAMP_TO_EDGE, t: TextureWrap.CLAMP_TO_EDGE },
+                    map: { min: TextureMap.LINEAR }
+                });
             texture.enableFramebuffer();
             this.processTextures.push(texture);
         }
@@ -148,7 +162,7 @@ export class Convolutional {
         shader.get("u_resolution").set(gl.canvas.width, gl.canvas.width);
 
         shader.get("u_flipY").set(1);
-        this.originalTexture.use();
+        this.originalTexture.bind();
         var count = 0;
         for (let name of effects) {
 

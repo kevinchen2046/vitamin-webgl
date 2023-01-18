@@ -1,4 +1,4 @@
-import { Geometry } from "./geometry/Geometry";
+import { Geometry } from "./customhello/geometry/Geometry";
 
 var VSHADER_SOURCE =
 /*glsl*/`

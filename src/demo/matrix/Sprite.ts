@@ -1,6 +1,6 @@
 import { Context } from "../../core/Context";
-import { Texture, TypeTextureDraw } from "../../core/Texture";
-import { Quad } from "../geometry/Quad";
+import { Texture, TextureMap, TextureWrap } from "../../core/Texture";
+import { Quad } from "../customhello/geometry/Quad";
 import { Loader } from "../../utils/Util";
 import { Matrix3, MatrixUtil } from "./Matrix3";
 import { glsl, mat3, vec3, vec4, _vec3 } from "../../core/GLSL";
@@ -54,7 +54,7 @@ class MyFS extends GLSL_Fragment {
 
     protected main() {
         glsl`
-      gl_FragColor = texture2D(u_sampler, v_texcoord.xy)*v_color;
+      gl_FragColor = texture2D(u_sampler, v_texcoord.xy)+(v_color*0.5+vec4(v_texcoord.xy,0.0,1.0)*0.5)*0.5;
     `;
     }
 }
@@ -93,6 +93,9 @@ export class Sprite {
 
         //创建Shader
         this._shader = Context.defaultProgram.createShader(MyVS, MyFS);
+    }
+
+    initialize() {
         //创建顶点数据并且关联到attribute属性
         this._shader.getAttribute("a_position").linkBuffer(
             this._shader.createBuffer(
@@ -124,7 +127,13 @@ export class Sprite {
         if (this._bitmap != v) {
             this._bitmap = v;
             if (!this.texture) {
-                this.texture = Context.defaultShader.createTexture("u_sampler", this._bitmap, 0, TypeTextureDraw.CLAMP_TO_EDGE);
+                this.texture = Context.defaultProgram.createTexture(this._bitmap, {
+                    uniformName: "u_sampler",
+                    samplePosition: 0,
+                    wrap: { s: TextureWrap.CLAMP_TO_EDGE, t: TextureWrap.CLAMP_TO_EDGE },
+                    map: { min: TextureMap.LINEAR }
+                });
+                // this.texture.update();
             } else {
                 this.texture.image = this._bitmap;
                 this.texture.update();
@@ -152,8 +161,8 @@ export class Sprite {
         return this._texture;
     }
 
-    public get width(){return this._texture?.width}
-    public get height(){return this._texture?.height}
+    public get width() { return this._texture?.width }
+    public get height() { return this._texture?.height }
 
     public get vertexs() {
         return this._quad.vertexs(this._texture?.width, this._texture?.height);
@@ -165,19 +174,19 @@ export class Sprite {
 
     public pos(x: number, y?: number) {
         this._transform.pos.x = x;
-        this._transform.pos.y = y??x;
+        this._transform.pos.y = y ?? x;
         this.updateMatrix();
     }
 
     public scale(x: number, y?: number) {
         this._transform.scale.x = x;
-        this._transform.scale.y = y??x;
+        this._transform.scale.y = y ?? x;
         this.updateMatrix();
     }
 
     public pivot(x: number, y?: number) {
         this._transform.pivot.x = x;
-        this._transform.pivot.y = y??x;
+        this._transform.pivot.y = y ?? x;
         this.updateMatrix();
     }
 

@@ -1,9 +1,10 @@
-import { RenderProgram } from "./RenderProgram";
+import { Program } from "./Program";
 
 export class Context {
     public static gl: WebGLRenderingContext;
     public static frame: number;
-    private static programs: RenderProgram[];
+    public static programs: Program[];
+    public static curProgram:Program;
     private static ticks: { caller: any, method: Function }[];
     public static initialize(canvas: HTMLCanvasElement) {
         Context.gl = Utils.getWebGLContext(canvas);
@@ -35,9 +36,13 @@ export class Context {
     }
 
     static createProgram() {
-        let program = new RenderProgram();
+        let program = new Program();
         this.programs.push(program);
         return program;
+    }
+
+    static useProgram(index: number = 0) {
+        this.curProgram=this.programs[index].use();
     }
 
     static updateRender() {

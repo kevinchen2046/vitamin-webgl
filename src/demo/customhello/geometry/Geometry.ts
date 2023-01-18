@@ -1,5 +1,5 @@
-import { ColorUtil } from "../../utils/ColorUtil";
-import { Hashtable } from "../../utils/Hashtable";
+import { ColorUtil } from "../../../utils/ColorUtil";
+import { Hashtable } from "../../../utils/Hashtable";
 
 export class Geometry {
     public size: number = 1;

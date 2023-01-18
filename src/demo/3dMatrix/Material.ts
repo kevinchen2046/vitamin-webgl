@@ -3,6 +3,7 @@ import { Context } from "../../core/Context";
 import { mat4, vec4 } from "../../core/GLSL";
 import { attribute, DefinedType, GLSL_Fragment, GLSL_Vertex, precision, PrecisionType, sampler2D, uniform, varying, _vec2, _vec4 } from "../../core/GLSL";
 import { Shader } from "../../core/Shader";
+import { BufferType } from "../../core/ShaderBuffer";
 
 @precision(PrecisionType.mediump)
 class MyVS extends GLSL_Vertex {
@@ -46,17 +47,32 @@ class MyFS extends GLSL_Fragment {
     }
 }
 
-let _GID = 0;
-
 export class Material {
-    private _shader: Shader;
+    protected _shader: Shader;
     constructor() { }
-    public createShader() {
+    public initShader(vsclzz?: any, fsclazz?: any) {
         if (!this._shader) {
-            this._shader = Context.defaultProgram.createShader(MyVS, MyFS);
+            this._shader = Context.defaultProgram.createShader(vsclzz ?? MyVS, fsclazz ?? MyFS);
             return true;
         }
         return false;
+    }
+
+    public initialize() {
+        let shader = this._shader;
+        //创建顶点数据并且关联到attribute属性
+        shader.getAttribute("a_position").linkBuffer(
+            shader.createBuffer(
+                null,
+                3,
+                Context.gl.STATIC_DRAW));
+
+        //创建纹理坐标uv数据并且关联到attribute属性
+        shader.getAttribute("a_color").linkBuffer(
+            shader.createBuffer(
+                null,
+                3,
+                Context.gl.STATIC_DRAW), 3, BufferType.UNSIGNED_BYTE, true);
     }
 
     public get shader() { return this._shader }
