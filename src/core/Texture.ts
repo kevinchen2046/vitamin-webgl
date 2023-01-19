@@ -98,6 +98,7 @@ export class Texture {
         let gl = Context.gl;
         gl.bindTexture(gl.TEXTURE_2D, this.gltexture);
         this.sampler.set(this.position);
+        // gl.uniform1i(this.sampler.location, 0);
     }
 
     update() {

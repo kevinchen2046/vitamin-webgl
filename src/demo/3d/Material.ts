@@ -11,20 +11,15 @@ class MyVS extends GLSL_Vertex {
     public a_position: vec4;
     @attribute(DefinedType.vec4)
     public a_color: vec4;
-
     @uniform(DefinedType.mat4)
     public u_matrix: mat4;
-
     @varying(DefinedType.vec4)
     public v_color: vec4;
-
     @varying(DefinedType.vec4)
     public v_position: vec4;
-
     protected main() {
         // Multiply the position by the matrix.
         this.gl_Position._ = this.u_matrix._ * this.a_position._;
-
         // Pass the color to the fragment shader.
         this.v_color = this.a_color;
         this.v_position = this.a_position;
@@ -35,13 +30,10 @@ class MyVS extends GLSL_Vertex {
 class MyFS extends GLSL_Fragment {
     @uniform(DefinedType.sampler2D)
     public u_sampler: sampler2D;
-
     @varying(DefinedType.vec4)
     public v_color: vec4;
-
     @varying(DefinedType.vec4)
     public v_position: vec4;
-
     protected main() {
         this.gl_FragColor._ = this.v_color._ * 0.8 + (this.v_position._ * 0.03) * 0.2;
     }

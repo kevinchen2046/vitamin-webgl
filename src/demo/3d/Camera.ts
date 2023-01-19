@@ -6,9 +6,7 @@ import { Mesh } from "./Mesh";
 import { Transform } from "./Transform";
 
 export class Camera {
-
     public transform: Transform;
-
     public fieldOfView: number;
     public aspect: number;
     public near: number;
@@ -36,7 +34,7 @@ export class Camera {
         let scale = transform.scale;
         var matrix;
         if (this.target) {
-            matrix = Matrix4.lookAt(position.vec3, this.target.transform.position.vec3, [0, 1, 0]);
+            matrix = Matrix4.lookAt(position.xyz, this.target.transform.position.xyz, [0, 1, 0]);
         } else {
             matrix = new Matrix4(16).identity();
             matrix = matrix.translate(matrix, position.x, position.y, position.z);

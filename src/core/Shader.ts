@@ -7,9 +7,8 @@ import { Uniform } from "./Uniform";
 import { Program } from "./Program";
 
 export class Shader {
-    private program: Program;
+    public program: Program;
     private buffers: ShaderBuffer[];
-
     private properties: Map<string, Uniform | Attribute>;
     public vsclzz:any;
     public fsclzz:any;

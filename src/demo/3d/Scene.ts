@@ -18,10 +18,6 @@ export class Scene {
         this.camera = new Camera();
     }
 
-    public compile(material: Material) {
-        material.initShader()
-    }
-
     public addChild(mesh: Mesh) {
         this.meshs.push(mesh);
         mesh.on("MATERIAL_CHANGE", this, this.meterialChange);
@@ -38,6 +34,7 @@ export class Scene {
         this.meshs.forEach(mesh=>{
             mesh.material?.initialize();
         });
+        program.use();
     }
 
     public updateRender(){
