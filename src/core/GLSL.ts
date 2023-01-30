@@ -232,7 +232,15 @@ export function _vec3(x: float, y: float, z: float) {
 export function _vec4(x: float, y?: float, z?: float, w?: float) {
     return new vec4();
 }
-
+export function _mat2(...args) {
+    return new mat2();
+}
+export function _mat3(...args) {
+    return new mat3();
+}
+export function _mat4(...args) {
+    return new mat4();
+}
 /////////////////////////内置函数/////////////////////////////////
 
 ///////////////////角度函数和三角函数
@@ -531,6 +539,9 @@ export function getGlsl(clazz) {
                 v = v.replace(/_vec2/g, "vec2");
                 v = v.replace(/_vec3/g, "vec3");
                 v = v.replace(/_vec4/g, "vec4");
+                v = v.replace(/_mat2/g, "mat2");
+                v = v.replace(/_mat3/g, "mat3");
+                v = v.replace(/_mat4/g, "mat4");
                 v = v.replace(/GLSL_[0-9]./g, "");
                 v = v.replace(/\._/g, "");
                 if (/let |var /g.test(v)) {

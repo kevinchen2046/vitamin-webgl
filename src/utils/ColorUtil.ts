@@ -12,6 +12,13 @@ export class ColorUtil {
             b: ((color & 0x0000ff))
         }
     }
+    static extractToArray(color: number): number[] {
+        return [
+            ((color & 0xff0000) >> 16),
+            ((color & 0x00ff00) >> 8),
+            ((color & 0x0000ff))
+        ]
+    }
     /**
      * 将三原色合并 
      * @param r

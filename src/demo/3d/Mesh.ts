@@ -12,6 +12,7 @@ export class Mesh extends EventEmiter{
     private _transform: Transform;
     private _vertexes: Float32Array;
     private _colors: Uint8Array;
+    private _normals: Float32Array;
     private _material: Material;
     constructor(material?:Material) {
         super();
@@ -47,6 +48,15 @@ export class Mesh extends EventEmiter{
         return this._colors;
     }
 
+    public set normals(v: Float32Array) {
+        this._normals = v;
+        this._material.setProperty("a_normal", this._normals);
+    }
+
+    public get normals() {
+        return this._normals;
+    }
+
     public get transform() {
         return this._transform;
     }
@@ -60,14 +70,22 @@ export class Mesh extends EventEmiter{
         let position = transform.position;
         let rotation = transform.rotation;
         let scale = transform.scale;
-        var matrix = camera.viewProjectionMatrix;
-        matrix = matrix.translate(matrix, position.x, position.y, position.z);
-        matrix = matrix.xRotate(matrix, rotation.x);
-        matrix = matrix.yRotate(matrix, rotation.y);
-        matrix = matrix.zRotate(matrix, rotation.z);
-        matrix = matrix.scale(matrix, scale.x, scale.y, scale.z);
+        let matrix = Matrix4.identity();
+        matrix = Matrix4.translate(matrix, position.x, position.y, position.z); 
+        matrix = Matrix4.xRotate(matrix, rotation.x);
+        matrix = Matrix4.yRotate(matrix, rotation.y);
+        matrix = Matrix4.zRotate(matrix, rotation.z);
+        matrix = Matrix4.scale(matrix, scale.x, scale.y, scale.z);
         this._matrix=matrix;
-        this._material.setProperty("u_matrix", this._matrix);
+        
+        this._material.setProperty("u_viewWorldPosition",...camera.transform.position.xyz);
+        this._material.setProperty("u_world", matrix);
+
+        var worldViewProjectionMatrix = Matrix4.multiply(camera.viewProjectionMatrix,matrix);
+        this._material.setProperty("u_worldViewProjection", worldViewProjectionMatrix);
+  
+        var worldInverseTransposeMatrix = Matrix4.transpose(Matrix4.inverse(matrix));
+        this._material.setProperty("u_worldInverseTranspose", worldInverseTransposeMatrix);
         return matrix;
     }
 }

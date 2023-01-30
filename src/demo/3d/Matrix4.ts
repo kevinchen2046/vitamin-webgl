@@ -29,7 +29,6 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import { vec3 } from "../../core/GLSL";
 import { Vector3 } from "./D3Face";
 
 
@@ -41,7 +40,9 @@ import { Vector3 } from "./D3Face";
  */
 export class Matrix4 extends Float32Array{
   
-
+    constructor(length?:number){
+      super(length??16);
+    }
   
     /**
      * Takes two 4-by-4 matrices, a and b, and computes the product in the order
@@ -72,6 +73,7 @@ export class Matrix4 extends Float32Array{
       var b31 = b[3 * 4 + 1];
       var b32 = b[3 * 4 + 2];
       var b33 = b[3 * 4 + 3];
+      
       var a00 = a[0 * 4 + 0];
       var a01 = a[0 * 4 + 1];
       var a02 = a[0 * 4 + 2];
@@ -88,6 +90,7 @@ export class Matrix4 extends Float32Array{
       var a31 = a[3 * 4 + 1];
       var a32 = a[3 * 4 + 2];
       var a33 = a[3 * 4 + 3];
+      
       dst[ 0] = b00 * a00 + b01 * a10 + b02 * a20 + b03 * a30;
       dst[ 1] = b00 * a01 + b01 * a11 + b02 * a21 + b03 * a31;
       dst[ 2] = b00 * a02 + b01 * a12 + b02 * a22 + b03 * a32;
@@ -117,7 +120,7 @@ export class Matrix4 extends Float32Array{
      * @memberOf module:webgl-3d-math
      */
     addVectors(a, b, dst) {
-      dst = dst || new Matrix4(3);
+      dst = dst || new Array(3);
       dst[0] = a[0] + b[0];
       dst[1] = a[1] + b[1];
       dst[2] = a[2] + b[2];
@@ -133,7 +136,7 @@ export class Matrix4 extends Float32Array{
      * @memberOf module:webgl-3d-math
      */
     static subtractVectors(a:Vector3, b:Vector3, dst?) {
-      dst = dst || new Matrix4(3);
+      dst = dst || new Array(3);
       dst[0] = a[0] - b[0];
       dst[1] = a[1] - b[1];
       dst[2] = a[2] - b[2];
@@ -149,7 +152,7 @@ export class Matrix4 extends Float32Array{
      * @memberOf module:webgl-3d-math
      */
     scaleVector(v, s, dst?) {
-      dst = dst || new Matrix4(3);
+      dst = dst || new Array(3);
       dst[0] = v[0] * s;
       dst[1] = v[1] * s;
       dst[2] = v[2] * s;
@@ -163,8 +166,8 @@ export class Matrix4 extends Float32Array{
      * @return {Vector3} dst or new Vector3 if not provided
      * @memberOf module:webgl-3d-math
      */
-    static normalize(v:vec3, dst?) {
-      dst = dst || new Matrix4(3);
+    static normalize(v:number[], dst?) {
+      dst = dst || new Array(3);
       var length = Math.sqrt(v[0] * v[0] + v[1] * v[1] + v[2] * v[2]);
       // make sure we don't divide by 0.
       if (length > 0.00001) {
@@ -201,8 +204,8 @@ export class Matrix4 extends Float32Array{
      * @return {Vector3} dst or new Vector3 if not provided
      * @memberOf module:webgl-3d-math
      */
-    static cross(a:vec3, b:vec3, dst?) {
-      dst = dst || new Matrix4(3);
+    static cross(a:number[], b:number[], dst?) {
+      dst = dst || new Array(3);
       dst[0] = a[1] * b[2] - a[2] * b[1];
       dst[1] = a[2] * b[0] - a[0] * b[2];
       dst[2] = a[0] * b[1] - a[1] * b[0];
@@ -250,7 +253,7 @@ export class Matrix4 extends Float32Array{
      * @return {Matrix4} dst or a new matrix if none provided
      * @memberOf module:webgl-3d-math
      */
-    identity(dst?) {
+    static identity(dst?) {
       dst = dst || new Matrix4(16);
   
       dst[ 0] = 1;
@@ -280,7 +283,7 @@ export class Matrix4 extends Float32Array{
      * @return {Matrix4} dst or a new matrix if none provided
      * @memberOf module:webgl-3d-math
      */
-    transpose(m, dst) {
+    static transpose(m, dst?) {
       dst = dst || new Matrix4(16);
   
       dst[ 0] = m[0];
@@ -514,7 +517,7 @@ export class Matrix4 extends Float32Array{
      * @return {Matrix4} dst or a new matrix if none provided
      * @memberOf module:webgl-3d-math
      */
-    translate(m, tx, ty, tz, dst?) {
+    static translate(m, tx, ty, tz, dst?) {
       // This is the optimized version of
       // return multiply(m, translation(tx, ty, tz), dst);
       dst = dst || new Matrix4(16);
@@ -566,7 +569,7 @@ export class Matrix4 extends Float32Array{
      * @return {Matrix4} dst or a new matrix if none provided
      * @memberOf module:webgl-3d-math
      */
-    xRotation(angleInRadians, dst) {
+     static xRotation(angleInRadians, dst?) {
       dst = dst || new Matrix4(16);
       var c = Math.cos(angleInRadians);
       var s = Math.sin(angleInRadians);
@@ -599,7 +602,7 @@ export class Matrix4 extends Float32Array{
      * @return {Matrix4} dst or a new matrix if none provided
      * @memberOf module:webgl-3d-math
      */
-    xRotate(m, angleInRadians, dst?) {
+     static xRotate(m, angleInRadians, dst?) {
       // this is the optimized version of
       // return multiply(m, xRotation(angleInRadians), dst);
       dst = dst || new Matrix4(16);
@@ -645,7 +648,7 @@ export class Matrix4 extends Float32Array{
      * @return {Matrix4} dst or a new matrix if none provided
      * @memberOf module:webgl-3d-math
      */
-    yRotation(angleInRadians, dst) {
+     static yRotation(angleInRadians, dst?) {
       dst = dst || new Matrix4(16);
       var c = Math.cos(angleInRadians);
       var s = Math.sin(angleInRadians);
@@ -678,7 +681,7 @@ export class Matrix4 extends Float32Array{
      * @return {Matrix4} dst or a new matrix if none provided
      * @memberOf module:webgl-3d-math
      */
-    yRotate(m, angleInRadians, dst?) {
+     static yRotate(m, angleInRadians, dst?) {
       // this is the optimized version of
       // return multiply(m, yRotation(angleInRadians), dst);
       dst = dst || new Matrix4(16);
@@ -724,7 +727,7 @@ export class Matrix4 extends Float32Array{
      * @return {Matrix4} dst or a new matrix if none provided
      * @memberOf module:webgl-3d-math
      */
-    zRotation(angleInRadians, dst) {
+     static zRotation(angleInRadians, dst) {
       dst = dst || new Matrix4(16);
       var c = Math.cos(angleInRadians);
       var s = Math.sin(angleInRadians);
@@ -757,7 +760,7 @@ export class Matrix4 extends Float32Array{
      * @return {Matrix4} dst or a new matrix if none provided
      * @memberOf module:webgl-3d-math
      */
-    zRotate(m, angleInRadians, dst?) {
+     static zRotate(m, angleInRadians, dst?) {
       // This is the optimized version of
       // return multiply(m, zRotation(angleInRadians), dst);
       dst = dst || new Matrix4(16);
@@ -924,7 +927,7 @@ export class Matrix4 extends Float32Array{
      * @return {Matrix4} dst or a new matrix if none provided
      * @memberOf module:webgl-3d-math
      */
-    scaling(sx, sy, sz, dst) {
+    static scaling(sx, sy, sz, dst) {
       dst = dst || new Matrix4(16);
   
       dst[ 0] = sx;
@@ -957,7 +960,7 @@ export class Matrix4 extends Float32Array{
      * @return {Matrix4} dst or a new matrix if none provided
      * @memberOf module:webgl-3d-math
      */
-    scale(m, sx, sy, sz, dst?) {
+     static scale(m, sx, sy, sz, dst?) {
       // This is the optimized version of
       // return multiply(m, scaling(sx, sy, sz), dst);
       dst = dst || new Matrix4(16);
@@ -1293,8 +1296,8 @@ export class Matrix4 extends Float32Array{
      * @return {Vector4} dst or new Vector4 if not provided
      * @memberOf module:webgl-3d-math
      */
-    transformPoint(m, v, dst) {
-      dst = dst || new Matrix4(3);
+    static transformPoint(m, v, dst?) {
+      dst = dst || new Array(3);
       var v0 = v[0];
       var v1 = v[1];
       var v2 = v[2];
@@ -1321,7 +1324,7 @@ export class Matrix4 extends Float32Array{
      * @memberOf module:webgl-3d-math
      */
     transformDirection(m, v, dst) {
-      dst = dst || new Matrix4(3);
+      dst = dst || new Array(3);
   
       var v0 = v[0];
       var v1 = v[1];
@@ -1350,7 +1353,7 @@ export class Matrix4 extends Float32Array{
      * @memberOf module:webgl-3d-math
      */
     static transformNormal(m, v, dst) {
-      dst = dst || new Matrix4(3);
+      dst = dst || new Array(3);
       var mi = Matrix4.inverse(m);
       var v0 = v[0];
       var v1 = v[1];

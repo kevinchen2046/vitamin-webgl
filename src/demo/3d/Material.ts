@@ -5,46 +5,18 @@ import { attribute, DefinedType, GLSL_Fragment, GLSL_Vertex, precision, Precisio
 import { Shader } from "../../core/Shader";
 import { BufferType } from "../../core/ShaderBuffer";
 
-@precision(PrecisionType.mediump)
-class MyVS extends GLSL_Vertex {
-    @attribute(DefinedType.vec4)
-    public a_position: vec4;
-    @attribute(DefinedType.vec4)
-    public a_color: vec4;
-    @uniform(DefinedType.mat4)
-    public u_matrix: mat4;
-    @varying(DefinedType.vec4)
-    public v_color: vec4;
-    @varying(DefinedType.vec4)
-    public v_position: vec4;
-    protected main() {
-        // Multiply the position by the matrix.
-        this.gl_Position._ = this.u_matrix._ * this.a_position._;
-        // Pass the color to the fragment shader.
-        this.v_color = this.a_color;
-        this.v_position = this.a_position;
-    }
-}
-
-@precision(PrecisionType.mediump)
-class MyFS extends GLSL_Fragment {
-    @uniform(DefinedType.sampler2D)
-    public u_sampler: sampler2D;
-    @varying(DefinedType.vec4)
-    public v_color: vec4;
-    @varying(DefinedType.vec4)
-    public v_position: vec4;
-    protected main() {
-        this.gl_FragColor._ = this.v_color._ * 0.8 + (this.v_position._ * 0.03) * 0.2;
-    }
-}
 
 export class Material {
     protected _shader: Shader;
-    constructor() { }
-    public initShader(vsclzz?: any, fsclazz?: any) {
+    private _vsclzz:any;
+    private _fsclzz:any;
+    constructor(vsclzz,fsclzz) {
+        this._vsclzz=vsclzz;
+        this._fsclzz=fsclzz;
+    }
+    public initShader() {
         if (!this._shader) {
-            this._shader = Context.defaultProgram.createShader(vsclzz ?? MyVS, fsclazz ?? MyFS);
+            this._shader = Context.defaultProgram.createShader(this._vsclzz,this._fsclzz);
             return true;
         }
         return false;
@@ -71,6 +43,10 @@ export class Material {
 
     public setProperty(name: string, ...args) {
         let prop = this._shader.get(name);
+        if(!prop){
+            // console.warn("shader 不包含属性:"+name);
+            return;
+        }
         if (prop instanceof Attribute) {
             prop.buffer.data = args[0];
         } else {

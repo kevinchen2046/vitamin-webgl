@@ -17,7 +17,7 @@ class TextureVS extends GLSL_Vertex {
     @attribute(DefinedType.vec2)
     public a_texcoord: vec2;
     @uniform(DefinedType.mat4)
-    public u_matrix: mat4;
+    public u_worldViewProjection: mat4;
     @varying(DefinedType.vec4)
     public v_color: vec4;
     @varying(DefinedType.vec4)
@@ -26,7 +26,7 @@ class TextureVS extends GLSL_Vertex {
     public v_texcoord: vec2;
     protected main() {
         // Multiply the position by the matrix.
-        this.gl_Position._ = this.u_matrix._ * this.a_position._;
+        this.gl_Position._ = this.u_worldViewProjection._ * this.a_position._;
         // Pass the color to the fragment shader.
         this.v_color = this.a_color;
         this.v_position = this.a_position;
@@ -51,9 +51,6 @@ class TextureFS extends GLSL_Fragment {
 
 class CubeMaterial extends Material {
     private _texture: Texture;
-    public initShader(): boolean {
-        return super.initShader(TextureVS, TextureFS);
-    }
 
     public initialize(): void {
         super.initialize();
@@ -87,9 +84,9 @@ export class D3CubeTexDemo {
         var image = await Loader.loadImage('./res/noodles.jpg');
         var config: any = await Loader.loadJson('./res/noodles.json');
         let cube = new Mesh();
-        cube.material = new CubeMaterial();
+        cube.material = new CubeMaterial(TextureVS, TextureFS);
         scene.addChild(cube);
-        //归一化 纹理信息
+        //单位化 纹理信息
         let uvconfigs = config.frames.map(v => {
             return {
                 x: v.x / config.size.w,
